@@ -4,6 +4,25 @@ from ..do_not_touch.result_structures import ValueFunction, PolicyAndValueFuncti
 from .MDP_contracts import MyMDPEnv
 import numpy as np
 
+def policy_eval(env, pi, Vs, theta=0.0000001):
+    while True:
+        delta = 0
+        for s in env.states():
+            v = Vs[s]
+            Vs[s] = 0.0
+            for a in env.actions():
+                total = 0.0
+                for s_p in env.states():
+                    for r in range(len(env.rewards())):
+                        total += env.transition_probability(s, a, s_p, r) * (env.rewards()[r] + 0.999 * Vs[s_p])
+                total *= pi[s][a]
+                Vs[s] += total
+            delta = max(delta, np.abs(v - Vs[s]))
+
+        if delta < theta:
+            break
+    return Vs
+
 
 def policy_evaluation_on_line_world() -> ValueFunction:
     """
@@ -46,21 +65,7 @@ def policy_evaluation_on_line_world() -> ValueFunction:
     pi[0] = {a:0.0 for a in env.actions}
     pi[nb_cells - 1] = {a:0.0 for a in env.actions}
 
-    while True:
-        delta = 0
-        for s in env.states:
-            v = Vs[s]
-            Vs[s] = 0.0
-            for a in env.actions:
-                total = 0.0
-                for s_p in env.states:
-                    for r in range(len(env.rewards)):
-                        total += env.transition_probability(s, a, s_p, r) * (env.rewards[r] + 0.999 * Vs[s_p])
-                total *= pi[s][a]
-                Vs[s] += total
-            delta = max(delta, np.abs(v - Vs[s]))
-        if delta < theta:
-            break
+    Vs = policy_eval(env, pi, Vs, theta=theta)
 
     return Vs
 
@@ -145,31 +150,17 @@ def policy_evaluation_on_grid_world() -> ValueFunction:
     # TODO
     theta = 0.0000001
     V = np.random.random((nb_cells,))
-    Vs:ValueFunction = {s:V[s] for s in env.states }
+    Vs:ValueFunction = {s:V[s] for s in env.states() }
     Vs[grid_size-1] = 0.0
     Vs[nb_cells - 1] = 0.0
 
     pi = {s:{a:random() for a in env.actions} for s in env.states}
-    for s in env.states:
+    for s in env.states():
         pi[s] = {a:v/total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
     pi[grid_size-1] = {a:0.0 for a in env.actions}
     pi[nb_cells - 1] = {a:0.0 for a in env.actions}
 
-    while True:
-        delta = 0
-        for s in env.states:
-            v = Vs[s]
-            Vs[s] = 0.0
-            for a in env.actions:
-                total = 0.0
-                for s_p in env.states:
-                    for r in range(len(env.rewards)):
-                        total += env.transition_probability(s, a, s_p, r) * (env.rewards[r] + 0.999 * Vs[s_p])
-                total *= pi[s][a]
-                Vs[s] += total
-            delta = max(delta, np.abs(v - Vs[s]))
-        if delta < theta:
-            break
+    Vs = policy_eval(env, pi, Vs, theta=theta)
 
     return Vs
 
@@ -201,9 +192,31 @@ def policy_evaluation_on_secret_env1() -> ValueFunction:
     Returns the Value function (V(s)) of this policy
     """
     env = Env1()
+    env.rewards
     
+    nb_cells = len(env.states())
+    terminal_states = []
+    for s in env.states():
+        if env.is_state_terminal(s):
+            terminal_states.append(s)
+    print(terminal_states)
+
     # TODO
-    pass
+    theta = 0.0000001
+    V = np.random.random((nb_cells,))
+    Vs:ValueFunction = {s:V[s] for s in env.states() }
+    for s in terminal_states:
+        Vs[s]=0.0
+
+    pi = {s:{a:random() for a in env.actions()} for s in env.states()}
+    for s in env.states():
+        pi[s] = {a:v/total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
+    for s in terminal_states:
+        pi[s] = {a:0.0 for a in env.actions()}
+
+    Vs = policy_eval(env, pi, Vs, theta=theta)
+
+    return Vs
 
 
 def policy_iteration_on_secret_env1() -> PolicyAndValueFunction:
@@ -229,7 +242,7 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
 
 
 def demo():
-    print(policy_evaluation_on_line_world())
+    # print(policy_evaluation_on_line_world())
     # print(policy_iteration_on_line_world())
     # print(value_iteration_on_line_world())
 
@@ -237,6 +250,6 @@ def demo():
     # print(policy_iteration_on_grid_world())
     # print(value_iteration_on_grid_world())
 
-    # print(policy_evaluation_on_secret_env1())
+    print(policy_evaluation_on_secret_env1())
     # print(policy_iteration_on_secret_env1())
     # print(value_iteration_on_secret_env1())
