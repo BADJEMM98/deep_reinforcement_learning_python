@@ -7,6 +7,45 @@ from .utils import *
 
 
 
+# value_intération
+def interate_values(grid_env, v , pi, gamma, theta):
+
+    while True:
+        DELTA = 0
+        for s in grid_env.states():
+
+            oldV = v[s]
+            newV = []
+            for a in grid_env.actions():
+                for s_p in grid_env.states():
+                    for r in range(len(grid_env.rewards())):
+                        newV.append(grid_env.transition_probability(s, a, s_p, r) * (r + gamma * v[s_p]))
+            newV = np.array(newV)
+            bestV = np.where(newV == newV.max())[0]
+            bestState = np.random.choice(bestV)
+            v[s] = newV[bestState]
+            DELTA = max(DELTA, np.abs(oldV - v[s]))
+
+        if DELTA >= theta:
+            break
+
+    for s in grid_env.states():
+        newValues = []
+        actions = []
+
+        for a in grid_env.actions():
+            for s_p in grid_env.states():
+                for r in range(len(grid_env.rewards())):
+                        newValues.append(grid_env.transition_probability(s, a, s_p, r) * (r + gamma * v[s_p]))
+                actions.append(a)
+
+        newValues = np.array(newValues)
+        bestActionIDX = np.where(newValues == newValues.max())[0]
+        bestActions = actions[bestActionIDX[-1]]
+        pi[s][bestActions] = 1.0
+
+    return v, pi
+
 def policy_evaluation_on_line_world() -> ValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
