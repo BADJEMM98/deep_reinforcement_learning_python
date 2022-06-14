@@ -105,11 +105,11 @@ def policy_evaluation_on_grid_world() -> ValueFunction:
     Vs[grid_size-1] = 0.0
     Vs[nb_cells - 1] = 0.0
 
-    pi = {s:{a:random() for a in env.actions} for s in env.states}
+    pi = {s:{a:random() for a in env.actions()} for s in env.states()}
     for s in env.states():
         pi[s] = {a:v/total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
-    pi[grid_size-1] = {a:0.0 for a in env.actions}
-    pi[nb_cells - 1] = {a:0.0 for a in env.actions}
+    pi[grid_size-1] = {a:0.0 for a in env.actions()}
+    pi[nb_cells - 1] = {a:0.0 for a in env.actions()}
 
     Vs = policy_eval(env, pi, Vs, theta=theta)
 
