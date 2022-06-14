@@ -50,18 +50,8 @@ def policy_improvement(env, pi, Vs):
             stable = False
     return stable, pi
 
-
-
-def q_value(env, v, s,a,gamma):
-    q=0
-    for (p_sPrime, sPrime, r_ss_a, done) in env.transition_probability:
-        q += p_sPrime * (r_ss_a+gamma + v[sPrime])
-
-    return q
-
 # value_intération
 def interate_values(grid_env, v , pi, gamma, theta):
-
 
     while True:
         DELTA = 0
@@ -97,36 +87,7 @@ def interate_values(grid_env, v , pi, gamma, theta):
         bestActions = actions[bestActionIDX[0]]
         pi[s][bestActions]= 1.0
 
-
     return v, pi
-
-def v_itération(env):
-
-    nb_cells = len(env.states())
-    V = np.random.random((nb_cells,))
-    Vs: ValueFunction = {s: V[s] for s in env.states()}
-    Vs[0] = 0.0
-    Vs[nb_cells - 1] = 0.0
-    gamma = 0.99
-    theta = 0.00001
-
-    # pi = np.random.random((nb_cells, (len(env.actions))))
-    pi = {s: {a: random() for a in env.actions()} for s in env.states()}
-
-    for s in env.states():
-        if s in env.actions:
-            V[s] = np.random.random()
-        else:
-            V[s] = 0.0
-
-    pi[s] = {a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
-
-    pi[0] = {a: 0.0 for a in env.actions()}
-    pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
-
-    converged = False
-    i = 0
-
 
 def policy_evaluation_on_line_world() -> ValueFunction:
     """
@@ -358,28 +319,28 @@ def value_iteration_on_grid_world() -> PolicyAndValueFunction:
     gamma = 1.0
     theta = 1e-10
     nb_cells = grid_size * grid_size
-    states = np.arange(nb_cells)
-    actions = np.array([0, 1, 2, 3])  # 0:UP, 1:DOWN, 2:LEFT, 3:RIGHT
-    rewards = np.array([-1.0, 0.0, 1.0])
-    transition_matrix = init_grid_transition(grid_size, states, actions, rewards)
+    state = np.arange(nb_cells)
+    action = np.array([0, 1, 2, 3])  # 0:UP, 1:DOWN, 2:LEFT, 3:RIGHT
+    reward = np.array([-1.0, 0.0, 1.0])
+    transition_matrix = init_grid_transition(grid_size, state, action, reward)
 
-    terminal_states = [states[grid_size - 1], states[nb_cells - 1]]
+    terminal_states = [state[grid_size - 1], state[nb_cells - 1]]
 
-    env = MyMDPEnv(states=states, rewards=rewards, actions=actions, terminal_states=terminal_states,
+    env = MyMDPEnv(states=state, rewards=reward, actions=action, terminal_states=terminal_states,
                    transition_matrix=transition_matrix)
 
     # TODO
     theta = 0.0000001
     V = np.random.random((nb_cells,))
-    Vs: ValueFunction = {s: V[s] for s in env.states}
+    Vs: ValueFunction = {s: V[s] for s in env.states()}
     Vs[grid_size - 1] = 0.0
     Vs[nb_cells - 1] = 0.0
 
-    pi = {s: {a: random() for a in env.actions} for s in env.states}
-    for s in env.states:
+    pi = {s: {a: random() for a in env.actions()} for s in env.states()}
+    for s in env.states():
         pi[s] = {a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
-    pi[grid_size - 1] = {a: 0.0 for a in env.actions}
-    pi[nb_cells - 1] = {a: 0.0 for a in env.actions}
+    pi[grid_size - 1] = {a: 0.0 for a in env.actions()}
+    pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
 
 
     # TODO
@@ -443,19 +404,19 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
 
 
 def demo():
-<<<<<<< HEAD
+
     # print(policy_evaluation_on_line_world())
     # print(policy_iteration_on_line_world())
     #  print(value_iteration_on_line_world())
-=======
+
     #print(policy_evaluation_on_line_world())
     #print(policy_iteration_on_line_world())
     # print(value_iteration_on_line_world())
->>>>>>> master
+
 
     #print(policy_evaluation_on_grid_world())
     # print(policy_iteration_on_grid_world())
-     print(value_iteration_on_grid_world())
+    print(value_iteration_on_grid_world())
 
     #print(policy_evaluation_on_secret_env1())
     print(policy_iteration_on_secret_env1())
