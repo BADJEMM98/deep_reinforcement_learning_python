@@ -8,14 +8,14 @@ from .utils import *
 def policy_eval(env, pi, Vs, theta=0.0000001):
     while True:
         delta = 0
-        for s in env.states():
+        for s in env.states:
             v = Vs[s]
             Vs[s] = 0.0
-            for a in env.actions():
+            for a in env.actions:
                 total = 0.0
-                for s_p in env.states():
-                    for r in range(len(env.rewards())):
-                        total += env.transition_probability(s, a, s_p, r) * (env.rewards()[r] + 0.999 * Vs[s_p])
+                for s_p in env.states:
+                    for r in range(len(env.rewards)):
+                        total += env.transition_probability(s, a, s_p, r) * (env.rewards[r] + 0.999 * Vs[s_p])
                 total *= pi[s][a]
                 Vs[s] += total
             delta = max(delta, np.abs(v - Vs[s]))
@@ -30,13 +30,13 @@ def value_iteration(grid_env, v , pi, gamma, theta):
 
     while True:
         DELTA = 0
-        for s in grid_env.states():
+        for s in grid_env.states:
 
             oldV = v[s]
             newV = []
-            for a in grid_env.actions():
-                for s_p in grid_env.states():
-                    for r in range(len(grid_env.rewards())):
+            for a in grid_env.actions:
+                for s_p in grid_env.states:
+                    for r in range(len(grid_env.rewards)):
                         newV.append(grid_env.transition_probability(s, a, s_p, r) * (r + gamma * v[s_p]))
             newV = np.array(newV)
             bestV = np.where(newV == newV.max())[0]
@@ -47,15 +47,15 @@ def value_iteration(grid_env, v , pi, gamma, theta):
         if DELTA >= theta:
             break
 
-    for s in grid_env.states():
+    for s in grid_env.states:
         newValues = []
         actions = []
 
-        for a in grid_env.actions():
-            for s_p in grid_env.states():
-                for r in range(len(grid_env.rewards())):
+        for a in grid_env.actions:
+            for s_p in grid_env.states:
+                for r in range(len(grid_env.rewards)):
                         newValues.append(grid_env.transition_probability(s, a, s_p, r) * (r + gamma * v[s_p]))
-                actions.append(a)
+                        actions.append(a)
 
         newValues = np.array(newValues)
         bestActionIDX = np.where(newValues == newValues.max())[0]
@@ -282,20 +282,20 @@ def value_iteration_on_grid_world() -> PolicyAndValueFunction:
         "terminal_states": terminal_states,
         "transition_matrix": transition_matrix
     }
-    env = MyMDPEnv(env_data.values())
+    env = MyMDPEnv(states=states,rewards=rewards,actions=actions,terminal_states=terminal_states,transition_matrix=transition_matrix)
 
     # TODO
     theta = 0.0000001
     V = np.random.random((nb_cells,))
-    Vs: ValueFunction = {s: V[s] for s in env.states()}
+    Vs: ValueFunction = {s: V[s] for s in env.states}
     Vs[grid_size - 1] = 0.0
     Vs[nb_cells - 1] = 0.0
 
-    pi = {s: {a: random() for a in env.actions()} for s in env.states()}
-    for s in env.states():
+    pi = {s: {a: random() for a in env.actions} for s in env.states}
+    for s in env.states:
         pi[s] = {a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
-    pi[grid_size - 1] = {a: 0.0 for a in env.actions()}
-    pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
+    pi[grid_size - 1] = {a: 0.0 for a in env.actions}
+    pi[nb_cells - 1] = {a: 0.0 for a in env.actions}
 
     Vs = policy_eval(env, pi, Vs, theta=theta)
     gamma = 0.99
