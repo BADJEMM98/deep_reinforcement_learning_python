@@ -5,10 +5,28 @@ from .MDP_contracts import MyMDPEnv
 import numpy as np
 from .utils import *
 
+def policy_eval(env, pi, Vs, theta=0.0000001):
+    while True:
+        delta = 0
+        for s in env.states():
+            v = Vs[s]
+            Vs[s] = 0.0
+            for a in env.actions():
+                total = 0.0
+                for s_p in env.states():
+                    for r in range(len(env.rewards())):
+                        total += env.transition_probability(s, a, s_p, r) * (env.rewards()[r] + 0.999 * Vs[s_p])
+                total *= pi[s][a]
+                Vs[s] += total
+            delta = max(delta, np.abs(v - Vs[s]))
+
+        if delta < theta:
+            break
+    return Vs
 
 
 # value_intération
-def interate_values(grid_env, v , pi, gamma, theta):
+def value_iteration(grid_env, v , pi, gamma, theta):
 
     while True:
         DELTA = 0
@@ -44,7 +62,7 @@ def interate_values(grid_env, v , pi, gamma, theta):
         bestActions = actions[bestActionIDX[0]]
         pi[s][bestActions] = 1.0
 
-    return v, pi
+    return pi, v
 
 def policy_evaluation_on_line_world() -> ValueFunction:
     """
@@ -248,7 +266,6 @@ def value_iteration_on_grid_world() -> PolicyAndValueFunction:
     Launches a Value Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
-
     grid_size = 5
     nb_cells = grid_size * grid_size
     states = np.arange(nb_cells)
@@ -265,7 +282,7 @@ def value_iteration_on_grid_world() -> PolicyAndValueFunction:
         "terminal_states": terminal_states,
         "transition_matrix": transition_matrix
     }
-    env = MyMDPEnv(env_data)
+    env = MyMDPEnv(env_data.values())
 
     # TODO
     theta = 0.0000001
@@ -281,9 +298,12 @@ def value_iteration_on_grid_world() -> PolicyAndValueFunction:
     pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
 
     Vs = policy_eval(env, pi, Vs, theta=theta)
+    gamma = 0.99
 
-    # TODO
-    return interate_values(env,Vs,pi,0.99,theta)
+    pi, Vs = value_iteration(env,Vs,pi,gamma,theta)
+
+
+    return pi, Vs
 
 
 def policy_evaluation_on_secret_env1() -> ValueFunction:
@@ -344,10 +364,10 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
 
 def demo():
     #print(policy_evaluation_on_line_world())
-    #print(policy_iteration_on_line_world())
+    # print(policy_iteration_on_line_world())
     # print(value_iteration_on_line_world())
 
-    #print(policy_evaluation_on_grid_world())
+    # print(policy_evaluation_on_grid_world())
     # print(policy_iteration_on_grid_world())
     print(value_iteration_on_grid_world())
 
