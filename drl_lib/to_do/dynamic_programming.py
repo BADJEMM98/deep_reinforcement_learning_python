@@ -60,6 +60,8 @@ def value_iteration(grid_env, v , pi, gamma, theta):
         newValues = np.array(newValues)
         bestActionIDX = np.where(newValues == newValues.max())[0]
         bestActions = actions[bestActionIDX[0]]
+        for i in range(len(grid_env.actions)):
+            pi[s][i] = 0
         pi[s][bestActions] = 1.0
 
     return pi, v
@@ -391,7 +393,7 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
 
 
 def demo():
-    #print(policy_evaluation_on_line_world())
+    # print(policy_evaluation_on_line_world())
     # print(policy_iteration_on_line_world())
     print(value_iteration_on_line_world())
 
@@ -399,6 +401,6 @@ def demo():
     # print(policy_iteration_on_grid_world())
     print(value_iteration_on_grid_world())
 
-    #print(policy_evaluation_on_secret_env1())
+    # print(policy_evaluation_on_secret_env1())
     # print(policy_iteration_on_secret_env1())
     # print(value_iteration_on_secret_env1())
