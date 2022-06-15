@@ -29,7 +29,7 @@ def policy_eval(env, pi, Vs, theta=0.0000001):
 def value_iteration(grid_env, v , pi, gamma, theta):
 
     while True:
-        DELTA = 0
+        delta = 0
         for s in grid_env.states:
 
             oldV = v[s]
@@ -37,14 +37,14 @@ def value_iteration(grid_env, v , pi, gamma, theta):
             for a in grid_env.actions:
                 for s_p in grid_env.states:
                     for r in range(len(grid_env.rewards)):
-                        newV.append(grid_env.transition_probability(s, a, s_p, r) * (r + gamma * v[s_p]))
+                        newV.append(grid_env.transition_probability(s, a, s_p, r) * (grid_env.rewards[r] + gamma * v[s_p]))
             newV = np.array(newV)
             bestV = np.where(newV == newV.max())[0]
             bestState = np.random.choice(bestV)
             v[s] = newV[bestState]
-            DELTA = max(DELTA, np.abs(oldV - v[s]))
+            delta = max(delta, np.abs(oldV - v[s]))
 
-        if DELTA >= theta:
+        if delta < theta:
             break
 
     for s in grid_env.states:
@@ -54,7 +54,7 @@ def value_iteration(grid_env, v , pi, gamma, theta):
         for a in grid_env.actions:
             for s_p in grid_env.states:
                 for r in range(len(grid_env.rewards)):
-                        newValues.append(grid_env.transition_probability(s, a, s_p, r) * (r + gamma * v[s_p]))
+                        newValues.append(grid_env.transition_probability(s, a, s_p, r) * (grid_env.rewards[r] + gamma * v[s_p]))
                         actions.append(a)
 
         newValues = np.array(newValues)
@@ -197,7 +197,6 @@ def policy_iteration_on_line_world() -> PolicyAndValueFunction:
 
     return policy_iteration(env)
 
-
 def value_iteration_on_line_world() -> PolicyAndValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
@@ -205,7 +204,43 @@ def value_iteration_on_line_world() -> PolicyAndValueFunction:
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
     # TODO
-    pass
+    nb_cells = 7
+    states = np.arange(nb_cells)
+    actions = np.array([0, 1])
+    rewards = np.array([-1.0, 0.0, 1.0])
+    transition_matrix = np.zeros((len(states), len(actions), len(states), len(rewards)))  # p
+    for s in states[1:-1]:
+        if s == 1:
+            transition_matrix[s, 0, s - 1, 0] = 1.0
+        else:
+            transition_matrix[s, 0, s - 1, 1] = 1.0
+
+        if s == nb_cells - 2:
+            transition_matrix[s, 1, s + 1, 2] = 1.0
+        else:
+            transition_matrix[s, 1, s + 1, 1] = 1.0
+    terminal_states = [states[0], states[-1]]
+
+    env = MyMDPEnv(states=states,rewards=rewards,actions=actions,terminal_states=terminal_states,transition_matrix=transition_matrix)
+
+    theta = 0.0000001
+    V = np.random.random((nb_cells,))
+    Vs: ValueFunction = {s: V[s] for s in env.states}
+    Vs[0] = 0.0
+    Vs[nb_cells - 1] = 0.0
+
+    pi = {s: {a: random() for a in env.actions} for s in env.states}
+    for s in env.states:
+        pi[s] = {a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
+    pi[0] = {a: 0.0 for a in env.actions}
+    pi[nb_cells - 1] = {a: 0.0 for a in env.actions}
+
+    Vs = policy_eval(env, pi, Vs, theta=theta)
+    gamma = 0.99
+
+    pi, Vs = value_iteration(env, Vs, pi, gamma, theta)
+
+    return pi, Vs
 
 
 def policy_evaluation_on_grid_world() -> ValueFunction:
@@ -275,13 +310,6 @@ def value_iteration_on_grid_world() -> PolicyAndValueFunction:
 
     terminal_states = [states[grid_size - 1], states[nb_cells - 1]]
 
-    env_data = {
-        "states": states,
-        "actions": actions,
-        "rewards": rewards,
-        "terminal_states": terminal_states,
-        "transition_matrix": transition_matrix
-    }
     env = MyMDPEnv(states=states,rewards=rewards,actions=actions,terminal_states=terminal_states,transition_matrix=transition_matrix)
 
     # TODO
@@ -365,7 +393,7 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
 def demo():
     #print(policy_evaluation_on_line_world())
     # print(policy_iteration_on_line_world())
-    # print(value_iteration_on_line_world())
+    print(value_iteration_on_line_world())
 
     # print(policy_evaluation_on_grid_world())
     # print(policy_iteration_on_grid_world())
