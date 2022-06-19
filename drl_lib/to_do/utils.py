@@ -1,4 +1,7 @@
+from random import random
 import numpy as np
+
+from ..do_not_touch.result_structures import ValueFunction
 
 
 def policy_eval(env, pi, Vs, theta=0.0000001):
@@ -58,3 +61,90 @@ def init_grid_transition(grid_size, states, actions, rewards):
                 transition_matrix[grid_size * grid_size - 1, a, s_p, r] = 0.0
 
     return transition_matrix
+
+def policy_improvement(env, pi, Vs):
+    stable = True
+    for s in env.states():
+        old_pi_s = pi[s].copy()
+        best_a = -1
+        best_a_score = -99999999999
+        for a in env.actions():
+            total = 0
+            for s_p in env.states():
+                for r in range(len(env.rewards())):
+                    total += env.transition_probability(s, a, s_p, r) * (env.rewards()[r] + 0.999 * Vs[s_p])
+            if total > best_a_score:
+                best_a = a
+                best_a_score = total
+
+        pi[s] = {a:0.0 for a in env.actions()}
+        pi[s][best_a]=1.0        
+        #pi[s, :] = 0.0
+        #pi[s, best_a] = 1.0
+        if np.any(pi[s] != old_pi_s):
+            stable = False
+    return stable, pi
+
+def policy_iteration(env):
+    nb_cells = len(env.states())
+    V = np.random.random((nb_cells,))
+    Vs: ValueFunction = {s: V[s] for s in env.states()}
+    Vs[0] = 0.0
+    Vs[nb_cells - 1] = 0.0
+
+    #pi = np.random.random((nb_cells, (len(env.actions))))
+    pi = {s:{a:random() for a in env.actions()} for s in env.states()}
+
+    for s in env.states():
+        pi[s] = {a:v/total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
+        #pi[s] /= np.sum(pi[s])
+    pi[0] = {a:0.0 for a in env.actions()}
+    pi[nb_cells - 1] = {a:0.0 for a in env.actions()}
+    #pi[0] = 0.0
+    #pi[nb_cells - 1] = 0.0
+    while True:
+        Vs = policy_eval(env, pi, Vs)
+
+        stable, pi = policy_improvement(env, pi, Vs)
+        if stable:
+            return pi, Vs
+
+def value_iteration(grid_env, v , pi, gamma, theta):
+
+    while True:
+        delta = 0
+        for s in grid_env.states:
+
+            oldV = v[s]
+            newV = []
+            for a in grid_env.actions:
+                for s_p in grid_env.states:
+                    for r in range(len(grid_env.rewards)):
+                        newV.append(grid_env.transition_probability(s, a, s_p, r) * (grid_env.rewards[r] + gamma * v[s_p]))
+            newV = np.array(newV)
+            bestV = np.where(newV == newV.max())[0]
+            bestState = np.random.choice(bestV)
+            v[s] = newV[bestState]
+            delta = max(delta, np.abs(oldV - v[s]))
+
+        if delta < theta:
+            break
+
+    for s in grid_env.states:
+        newValues = []
+        actions = []
+
+        for a in grid_env.actions:
+            for s_p in grid_env.states:
+                for r in range(len(grid_env.rewards)):
+                        newValues.append(grid_env.transition_probability(s, a, s_p, r) * (grid_env.rewards[r] + gamma * v[s_p]))
+                        actions.append(a)
+
+        newValues = np.array(newValues)
+        bestActionIDX = np.where(newValues == newValues.max())[0]
+        bestActions = actions[bestActionIDX[0]]
+        for i in range(len(grid_env.actions)):
+            pi[s][i] = 0
+        pi[s][bestActions] = 1.0
+
+    return pi, v
