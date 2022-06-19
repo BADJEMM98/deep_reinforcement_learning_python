@@ -1,6 +1,6 @@
 from random import random
 from ..do_not_touch.mdp_env_wrapper import Env1
-from ..do_not_touch.result_structures import ValueFunction, PolicyAndValueFunction
+from ..do_not_touch.result_structures import Policy, ValueFunction, PolicyAndValueFunction
 from .MDP_contracts import MyMDPEnv
 import numpy as np
 from .utils import *
@@ -54,37 +54,37 @@ def policy_evaluation_on_line_world() -> ValueFunction:
 
     return Vs
 
-def policy_iteration_on_line_world() -> PolicyAndValueFunction:
+def policy_iteration_on_line_world(env) -> PolicyAndValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
     Launches a Policy Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
-    nb_cells = 7
-    states = np.arange(nb_cells)
-    actions = np.array([0, 1])
-    rewards = np.array([-1.0, 0.0, 1.0])
-    transition_matrix = np.zeros((len(states), len(actions), len(states), len(rewards)))  # p
-    for s in states[1:-1]:
-        if s == 1:
-            transition_matrix[s, 0, s - 1, 0] = 1.0
-        else:
-            transition_matrix[s, 0, s - 1, 1] = 1.0
+    # nb_cells = 7
+    # states = np.arange(nb_cells)
+    # actions = np.array([0, 1])
+    # rewards = np.array([-1.0, 0.0, 1.0])
+    # transition_matrix = np.zeros((len(states), len(actions), len(states), len(rewards)))  # p
+    # for s in states[1:-1]:
+    #     if s == 1:
+    #         transition_matrix[s, 0, s - 1, 0] = 1.0
+    #     else:
+    #         transition_matrix[s, 0, s - 1, 1] = 1.0
 
-        if s == nb_cells - 2:
-            transition_matrix[s, 1, s + 1, 2] = 1.0
-        else:
-            transition_matrix[s, 1, s + 1, 1] = 1.0
-    terminal_states = [states[0], states[-1]]
+    #     if s == nb_cells - 2:
+    #         transition_matrix[s, 1, s + 1, 2] = 1.0
+    #     else:
+    #         transition_matrix[s, 1, s + 1, 1] = 1.0
+    # terminal_states = [states[0], states[-1]]
     
-    env_data = {
-    "states":states,
-    "actions":actions,
-    "rewards":rewards,
-    "terminal_states":terminal_states,
-    "transition_matrix":transition_matrix
-    }
-    env = MyMDPEnv(env_data)
+    # env_data = {
+    # "states":states,
+    # "actions":actions,
+    # "rewards":rewards,
+    # "terminal_states":terminal_states,
+    # "transition_matrix":transition_matrix
+    # }
+    # env = MyMDPEnv(env_data)
 
     return policy_iteration(env)
 
