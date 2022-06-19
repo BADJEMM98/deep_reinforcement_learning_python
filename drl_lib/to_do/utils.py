@@ -1,6 +1,8 @@
 from random import random
 import numpy as np
 
+from .MDP_contracts import MyMDPEnv
+
 from ..do_not_touch.result_structures import ValueFunction
 
 
@@ -109,18 +111,18 @@ def policy_iteration(env):
         if stable:
             return pi, Vs
 
-def value_iteration(grid_env, v , pi, gamma, theta):
+def value_iteration(grid_env:MyMDPEnv, v , pi, gamma, theta):
 
     while True:
         delta = 0
-        for s in grid_env.states:
+        for s in grid_env.states():
 
             oldV = v[s]
             newV = []
-            for a in grid_env.actions:
-                for s_p in grid_env.states:
-                    for r in range(len(grid_env.rewards)):
-                        newV.append(grid_env.transition_probability(s, a, s_p, r) * (grid_env.rewards[r] + gamma * v[s_p]))
+            for a in grid_env.actions():
+                for s_p in grid_env.states():
+                    for r in range(len(grid_env.rewards())):
+                        newV.append(grid_env.transition_probability(s, a, s_p, r) * (grid_env.rewards()[r] + gamma * v[s_p]))
             newV = np.array(newV)
             bestV = np.where(newV == newV.max())[0]
             bestState = np.random.choice(bestV)
@@ -130,20 +132,20 @@ def value_iteration(grid_env, v , pi, gamma, theta):
         if delta < theta:
             break
 
-    for s in grid_env.states:
+    for s in grid_env.states():
         newValues = []
         actions = []
 
-        for a in grid_env.actions:
-            for s_p in grid_env.states:
-                for r in range(len(grid_env.rewards)):
-                        newValues.append(grid_env.transition_probability(s, a, s_p, r) * (grid_env.rewards[r] + gamma * v[s_p]))
+        for a in grid_env.actions():
+            for s_p in grid_env.states():
+                for r in range(len(grid_env.rewards())):
+                        newValues.append(grid_env.transition_probability(s, a, s_p, r) * (grid_env.rewards()[r] + gamma * v[s_p]))
                         actions.append(a)
 
         newValues = np.array(newValues)
         bestActionIDX = np.where(newValues == newValues.max())[0]
         bestActions = actions[bestActionIDX[0]]
-        for i in range(len(grid_env.actions)):
+        for i in range(len(grid_env.actions())):
             pi[s][i] = 0
         pi[s][bestActions] = 1.0
 

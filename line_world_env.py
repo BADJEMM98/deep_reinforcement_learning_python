@@ -5,7 +5,7 @@ import numpy as np
 from drl_lib.do_not_touch.mdp_env_wrapper import Env1
 from drl_lib.to_do.MDP_contracts import MyMDPEnv
 from drl_lib.to_do.lw_agent import LineWorldAgent
-from drl_lib.to_do.dynamic_programming import policy_iteration_on_line_world
+from drl_lib.to_do.dynamic_programming import policy_iteration_on_line_world, value_iteration_on_line_world
 
 pygame.init()
 WIDTH,HEIGHT=600,500
@@ -24,10 +24,11 @@ start_y = 50
 
 clock = pygame.time.Clock()
 
-def line_world(env,x_agent=None,y_agent=None):
+def line_world(env,Vs,x_agent=None,y_agent=None):
     columns =len(env.states())
     for x in range(start_x,start_x+columns*block_size,block_size):
         s = int((x-start_x)/block_size)
+        WIN.blit(pygame.font.SysFont('Arial', 15).render(str(round(Vs[s],3)), True, BLACK), (x+ int(block_size/3), start_y + int(block_size/3)))
         
         rect = pygame.Rect(x,start_y,block_size,block_size)
         if x == start_x:
@@ -41,8 +42,8 @@ def line_world(env,x_agent=None,y_agent=None):
             
     
 
-def draw_window(env,x_agent,y_agent):
-    line_world(env,x_agent,y_agent)
+def draw_window(env,Vs,x_agent,y_agent):
+    line_world(env,Vs,x_agent,y_agent)
     pygame.display.flip()
 
 def main():
@@ -71,11 +72,12 @@ def main():
         "transition_matrix":transition_matrix
     }
     lw_env = MyMDPEnv(lw_env_data)
-    options = list(range(start_x+block_size+int(block_size/2),start_x+int(lw_env.states()[-1])*block_size,block_size))
+    options = list(range(start_x+block_size+int(block_size/2),start_x+int(lw_env.states()[-1])*block_size +int(block_size/2),block_size))
     x_agent=random.choice(options)
     y_agent=start_y+block_size/2
     lw_agent = LineWorldAgent(x_agent,y_agent)
-    pi,Vs = policy_iteration_on_line_world(lw_env)
+    # pi,Vs = policy_iteration_on_line_world(lw_env)
+    pi,Vs = value_iteration_on_line_world(lw_env)
     while run:
         WIN.fill(WHITE)
         for event in pygame.event.get():
@@ -90,7 +92,7 @@ def main():
                 lw_agent.move_right(block_size)
             else:
                 lw_agent.move_left(block_size)
-        draw_window(lw_env,lw_agent.x,lw_agent.y)
+        draw_window(lw_env,Vs,lw_agent.x,lw_agent.y)
         clock.tick(1)
             
     pygame.quit()

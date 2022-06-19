@@ -88,43 +88,44 @@ def policy_iteration_on_line_world(env) -> PolicyAndValueFunction:
 
     return policy_iteration(env)
 
-def value_iteration_on_line_world() -> PolicyAndValueFunction:
+def value_iteration_on_line_world(env:MyMDPEnv) -> PolicyAndValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
     Launches a Value Iteration Algorithm in order to find the Optimal Policy and its Value Function
     Returns the Policy (Pi(s,a)) and its Value Function (V(s))
     """
     # TODO
-    nb_cells = 7
-    states = np.arange(nb_cells)
-    actions = np.array([0, 1])
-    rewards = np.array([-1.0, 0.0, 1.0])
-    transition_matrix = np.zeros((len(states), len(actions), len(states), len(rewards)))  # p
-    for s in states[1:-1]:
-        if s == 1:
-            transition_matrix[s, 0, s - 1, 0] = 1.0
-        else:
-            transition_matrix[s, 0, s - 1, 1] = 1.0
+    # nb_cells = 7
+    # states = np.arange(nb_cells)
+    # actions = np.array([0, 1])
+    # rewards = np.array([-1.0, 0.0, 1.0])
+    # transition_matrix = np.zeros((len(states), len(actions), len(states), len(rewards)))  # p
+    # for s in states[1:-1]:
+    #     if s == 1:
+    #         transition_matrix[s, 0, s - 1, 0] = 1.0
+    #     else:
+    #         transition_matrix[s, 0, s - 1, 1] = 1.0
 
-        if s == nb_cells - 2:
-            transition_matrix[s, 1, s + 1, 2] = 1.0
-        else:
-            transition_matrix[s, 1, s + 1, 1] = 1.0
-    terminal_states = [states[0], states[-1]]
+    #     if s == nb_cells - 2:
+    #         transition_matrix[s, 1, s + 1, 2] = 1.0
+    #     else:
+    #         transition_matrix[s, 1, s + 1, 1] = 1.0
+    # terminal_states = [states[0], states[-1]]
 
-    env = MyMDPEnv(states=states,rewards=rewards,actions=actions,terminal_states=terminal_states,transition_matrix=transition_matrix)
+    # env = MyMDPEnv(states=states,rewards=rewards,actions=actions,terminal_states=terminal_states,transition_matrix=transition_matrix)
 
     theta = 0.0000001
+    nb_cells = len(env.states())
     V = np.random.random((nb_cells,))
-    Vs: ValueFunction = {s: V[s] for s in env.states}
+    Vs: ValueFunction = {s: V[s] for s in env.states()}
     Vs[0] = 0.0
     Vs[nb_cells - 1] = 0.0
 
-    pi = {s: {a: random() for a in env.actions} for s in env.states}
-    for s in env.states:
+    pi = {s: {a: random() for a in env.actions()} for s in env.states()}
+    for s in env.states():
         pi[s] = {a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()}
-    pi[0] = {a: 0.0 for a in env.actions}
-    pi[nb_cells - 1] = {a: 0.0 for a in env.actions}
+    pi[0] = {a: 0.0 for a in env.actions()}
+    pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
 
     Vs = policy_eval(env, pi, Vs, theta=theta)
     gamma = 0.99

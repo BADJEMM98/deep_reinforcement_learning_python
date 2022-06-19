@@ -5,7 +5,7 @@ import numpy as np
 from drl_lib.do_not_touch.mdp_env_wrapper import Env1
 from drl_lib.to_do.MDP_contracts import MyMDPEnv
 from drl_lib.to_do.lw_agent import LineWorldAgent
-from drl_lib.to_do.dynamic_programming import policy_iteration_on_line_world
+from drl_lib.to_do.dynamic_programming import policy_iteration_on_grid_world
 
 pygame.init()
 WIDTH,HEIGHT=600,500
