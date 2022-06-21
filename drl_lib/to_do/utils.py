@@ -1,3 +1,4 @@
+import math
 from random import random
 import numpy as np
 
@@ -151,3 +152,28 @@ def value_iteration(grid_env:MyMDPEnv, v , pi, gamma, theta):
         pi[s][bestActions] = 1.0
 
     return pi, v
+
+# Board : board de Tictactoe, taille 3x3
+# 0 => Pas de pion
+# 1 => Pion Joueur 1
+# 2 => Pion Joueur 2
+# 120
+# 010
+# 201
+
+def convertBoardToState(board):
+    state = 0
+    for i in range(3):
+        for j in range(3):
+            state += board[i][j] * pow(3, i * 3 + j)
+    return state
+
+def convertStateToBoard(state, b=3):
+    if state == 0:
+        return [0]
+    digits = []
+    while state:
+        digits.append(int(state % b))
+        state //= b
+    return digits
+
