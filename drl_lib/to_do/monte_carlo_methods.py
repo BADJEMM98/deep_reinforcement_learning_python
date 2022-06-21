@@ -3,7 +3,7 @@ from random import random
 import numpy as np
 from ..do_not_touch.result_structures import PolicyAndActionValueFunction
 from ..do_not_touch.single_agent_env_wrapper import Env2
-
+import numpy as np
 
 def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
@@ -12,15 +12,8 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     """
     # TODO
-    size = 3
-    board = np.zeros((size, size))
-    
-    pi = {s: {a: random() for a in env.actions()} for s in env.states()}
-    for s in env.states():
-        pi[s] = {
-            a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()
-        }
 
+    pass
 
 def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
@@ -76,6 +69,7 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     env = Env2()
+
     # TODO
     pass
 
