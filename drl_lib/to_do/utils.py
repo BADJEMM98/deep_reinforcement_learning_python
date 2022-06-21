@@ -170,10 +170,11 @@ def convertBoardToState(board):
 
 def convertStateToBoard(state, b=3):
     if state == 0:
-        return [0]
+        return np.array([[0,0,0],[0,0,0],[0,0,0]])
     digits = []
     while state:
         digits.append(int(state % b))
         state //= b
-    return digits
+    digits = np.array(digits)
+    return digits.reshape(3,3)
 
