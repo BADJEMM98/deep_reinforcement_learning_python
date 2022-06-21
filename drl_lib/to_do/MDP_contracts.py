@@ -1,3 +1,5 @@
+import random
+
 from ..do_not_touch.contracts import MDPEnv
 import numpy as np
 class MyMDPEnv(MDPEnv):
@@ -17,8 +19,8 @@ class MyMDPEnv(MDPEnv):
         return s in self.env_data["terminal_states"]
 
     def transition_probability(self, s: int, a: int, s_p: int, r: float) -> float:
-
-        return self.env_data["transition_matrix"][s,a,s_p,r]
+        ridx = np.where(self.env_data["rewards"] == r)[0][0]
+        return self.env_data["transition_matrix"][s,a,s_p,ridx]
 
     # def view_state(self, s: int):
     #     print("It's secret !")
