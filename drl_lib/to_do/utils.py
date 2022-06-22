@@ -153,28 +153,5 @@ def value_iteration(grid_env:MyMDPEnv, v , pi, gamma, theta):
 
     return pi, v
 
-# Board : board de Tictactoe, taille 3x3
-# 0 => Pas de pion
-# 1 => Pion Joueur 1
-# 2 => Pion Joueur 2
-# 120
-# 010
-# 201
 
-def convertBoardToState(board):
-    state = 0
-    for i in range(3):
-        for j in range(3):
-            state += board[i][j] * pow(3, i * 3 + j)
-    return state
-
-def convertStateToBoard(state, b=3):
-    if state == 0:
-        return np.array([[0,0,0],[0,0,0],[0,0,0]])
-    digits = []
-    while state:
-        digits.append(int(state % b))
-        state //= b
-    digits = np.array(digits)
-    return digits.reshape(3,3)
 
