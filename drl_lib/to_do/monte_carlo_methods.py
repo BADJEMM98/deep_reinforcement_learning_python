@@ -1,4 +1,5 @@
-from random import random
+from collections import defaultdict
+from random import random,choice
 
 import numpy as np
 from ..do_not_touch.result_structures import PolicyAndActionValueFunction
@@ -11,9 +12,64 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     Launches a Monte Carlo ES (Exploring Starts) in order to find the optimal Policy and its action-value function
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     """
-    # TODO
+    # # TODO
+    # env = Env2()
+    # returns_sum = defaultdict(float)
+    # returns_count = defaultdict(float)
+    
+    # V = defaultdict(float)
+    # Q = defaultdict(lambda: np.zeros(len(env.available_actions_ids)))
+    # pi = defaultdict(lambda: np.random(len(env.available_actions_ids)))
+    # num_episodes = 10000
 
-    pass
+    # for i in range(num_episodes):
+    #     env.reset()
+    #     s0 = env.state_id()
+    #     a0 = choice(env.available_actions_ids)
+
+    #     env.act_with_action_id(a0)
+    #     s_history = [s0]
+    #     a_history = [a0]
+    #     s_p_history = [env.state_id()]
+    #     r_history = [env.score()]
+
+    #     while not env.is_game_over():
+    #         s = env.state_id()
+    #         a = choice(env.available_actions_ids(), p=pi[s].values())
+    #         env.act_with_action_id(a)
+    #         s_history.append(s)
+    #         a_history.append(a)
+    #         s_p_history.append(env.state_id())
+    #         r_history.append(env.score())
+                    
+    #     G = 0
+    #     for t in reversed(range(len(s_history))):
+    #         G = 0.999 * G + r_history[t]
+    #         s_t = s_history[t]
+    #         a_t = a_history[t]
+
+    #         appear = False
+    #         for t_p in range(t - 1):
+    #             if s_history[t_p] == s_t and a_history[t_p] == a_t:
+    #                 appear = True
+    #                 break
+    #         if appear:
+    #             continue
+
+    #         returns_sum[(s_t,a_t)] += G
+    #         returns_count[(s_t,a_t)] += 1.0
+    #         Q[s_t][a_t] = returns_sum[(s_t,a_t)]/returns_count[(s_t,a_t)]
+    #         pi[s_t]={a:0.0 for a in env.available_actions_ids()}
+    #         best_action = max(Q[s_t],key=Q[s_t].get)
+    #         pi[s_t][best_action] = 1.0
+
+    #         pi_and_Q =PolicyAndActionValueFunction()
+    #         pi_and_Q.pi = pi
+    #         pi_and_Q.q = Q
+        
+    #     return pi_and_Q
+
+
 
 def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
@@ -44,9 +100,63 @@ def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
     Launches a Monte Carlo ES (Exploring Starts) in order to find the optimal Policy and its action-value function
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     """
-    env = Env2()
     # TODO
-    pass
+    env = Env2()
+    returns_sum = defaultdict(float)
+    returns_count = defaultdict(float)
+    
+    V = defaultdict(float)
+    Q = defaultdict(lambda: np.zeros(len(env.available_actions_ids)))
+    pi = defaultdict(lambda: np.random(len(env.available_actions_ids)))
+    num_episodes = 10000
+
+    for i in range(num_episodes):
+        env.reset()
+        s0 = env.state_id()
+        a0 = choice(env.available_actions_ids)
+
+        env.act_with_action_id(a0)
+        s_history = [s0]
+        a_history = [a0]
+        s_p_history = [env.state_id()]
+        r_history = [env.score()]
+
+        while not env.is_game_over():
+            s = env.state_id()
+            a = choice(env.available_actions_ids(), p=pi[s].values())
+            env.act_with_action_id(a)
+            s_history.append(s)
+            a_history.append(a)
+            s_p_history.append(env.state_id())
+            r_history.append(env.score())
+                    
+        G = 0
+        for t in reversed(range(len(s_history))):
+            G = 0.999 * G + r_history[t]
+            s_t = s_history[t]
+            a_t = a_history[t]
+
+            appear = False
+            for t_p in range(t - 1):
+                if s_history[t_p] == s_t and a_history[t_p] == a_t:
+                    appear = True
+                    break
+            if appear:
+                continue
+
+            returns_sum[(s_t,a_t)] += G
+            returns_count[(s_t,a_t)] += 1.0
+            Q[s_t][a_t] = returns_sum[(s_t,a_t)]/returns_count[(s_t,a_t)]
+            pi[s_t]={a:0.0 for a in env.available_actions_ids()}
+            best_action = max(Q[s_t],key=Q[s_t].get)
+            pi[s_t][best_action] = 1.0
+
+            pi_and_Q =PolicyAndActionValueFunction()
+            pi_and_Q.pi = pi
+            pi_and_Q.q = Q
+        
+        return pi_and_Q
+
 
 
 def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunction:
