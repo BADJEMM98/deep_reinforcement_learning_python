@@ -87,7 +87,22 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
     # TODO
     pass
 
+def create_target_policy(Q):
+    
+    def policy_fn(state):
+        A = np.zeros_like(Q[state], dtype=float)
+        best_action = np.argmax(Q[state])
+        A[best_action] = 1.0
+        return A
+    return policy_fn
 
+def create_behaviour_policy(nA):
+    
+    def policy_fn(observation):
+        A = np.ones(nA, dtype=float) / nA
+        return A
+    return policy_fn
+    
 def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
@@ -95,8 +110,46 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValue
     Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
-    # TODO
-    pass
+    env = Env2()
+
+    V = defaultdict(float)
+    Q = defaultdict(lambda: np.zeros(len(env.available_actions_ids())))
+    pi = defaultdict(lambda: np.random(len(env.available_actions_ids())))
+    num_episodes = 10000
+
+    target_policy = create_target_policy(Q)
+    behaviour_policy = create_behaviour_policy(len(env.available_actions_ids()))
+    print(env.available_actions_ids())
+    
+    for i_episode in range(1, num_episodes+1):
+                
+        state = env.reset()
+        episode = []
+        while(not env.is_game_over()):
+            probs = behaviour_policy(state)
+            action = np.random.choice(len(probs), p=probs)
+            next_state, reward, done, _ = env.step(action)
+            episode.append((state, action, reward))
+            if done:
+                break
+            state = next_state
+            
+        G = 0.0
+        W = 1.0
+        
+        for t in range(len(episode))[::-1]:
+            state, action, reward = episode[t]
+            G = discount*G + reward
+            C[state][action] += W
+            Q[state][action] += (W/C[state][action]) * (G - Q[state][action])
+            
+            if action != np.argmax(target_policy(state)):
+                break
+                
+            W = W * (target_policy(state)[action]/behaviour_policy(state)[action])
+        
+    return Q, target_policy
+  
 
 
 def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
@@ -204,6 +257,7 @@ def demo():
     # print(off_policy_monte_carlo_control_on_tic_tac_toe_solo())
 
     print("secret env")
-    print(monte_carlo_es_on_secret_env2())
-    print(on_policy_first_visit_monte_carlo_control_on_secret_env2())
-    print(off_policy_monte_carlo_control_on_secret_env2())
+    print(off_policy_monte_carlo_control_on_tic_tac_toe_solo())
+    #print(monte_carlo_es_on_secret_env2())
+    #print(on_policy_first_visit_monte_carlo_control_on_secret_env2())
+    #print(off_policy_monte_carlo_control_on_secret_env2())
