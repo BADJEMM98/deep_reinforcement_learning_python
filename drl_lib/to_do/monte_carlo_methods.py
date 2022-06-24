@@ -27,7 +27,6 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     for i in range(num_episodes):
         env.reset()
         s0 = env.state_id()
-        print(env.available_actions_ids())
         a0 = choice(env.available_actions_ids())
 
         #env.act_with_action_id(a0)
@@ -85,7 +84,63 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     # TODO
-    pass
+
+
+    def epsilon_greedy_policy(Q, epsilon, state):
+        A = defaultdict(
+            lambda: {
+                a: 1 * epsilon / len(env.available_actions_ids())
+                for a in env.available_actions_ids()
+            }
+        )
+        print(env.available_actions_ids())
+        best_action = max(Q[state], key=Q[state].get)
+
+        A[state][best_action] += (1.0 - epsilon)
+        return A[state]
+
+    epsilon = 0.1
+    num_episodes = 10000
+
+    env = TicTacToeEnv()
+
+    returns_sum = defaultdict(float)
+    returns_count = defaultdict(float)
+
+    Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
+
+    for i_episode in range(1, num_episodes + 1):
+        if i_episode % 1 == 0:
+            print("\rEpisode {}/{}.".format(i_episode, num_episodes))
+
+        env.reset()
+        pair_history = []
+        s_history = []
+        while not env.is_game_over():
+            print(s_history)
+            state = env.state_id()
+            probs = epsilon_greedy_policy(Q, epsilon, state)
+            a = choices(np.arange(len(probs)), weights=probs)[0]
+
+            env.act_with_action_id(env.players[1].sign, a)
+
+            rand_action = env.players[0].play(env.available_actions_ids())
+            env.act_with_action_id(env.players[0].sign, rand_action)
+
+            r = env.score()
+            pair_history.append(((state, a), r))
+            s_history.append(state)
+        G = 0
+        for ((s, a), r) in pair_history:
+            first_occurence_idx = next(
+                i for i, (s_a, r) in enumerate(pair_history) if s_a == (s, a))
+            G = sum([r for ((s, a), r) in pair_history[first_occurence_idx:]])
+
+            returns_sum[(s, a)] += G
+            returns_count[(s, a)] += 1.0
+            Q[s][a] = returns_sum[(s, a)] / returns_count[(s, a)]
+
+    return Q, epsilon_greedy_policy
 
 
 def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
@@ -109,10 +164,9 @@ def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
     env = Env2()
     returns_sum = defaultdict(float)
     returns_count = defaultdict(float)
-    V = defaultdict(float)
-    len_action = len(env.available_actions_ids())
-    Q = defaultdict(lambda: np.zeros(len_action))
-    pi = defaultdict(lambda: np.random.random(len_action))
+
+    Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
+    pi = defaultdict(lambda: {a: random for a in env.available_actions_ids()})
 
     num_episodes = 10000
     for i in range(num_episodes):
@@ -128,10 +182,7 @@ def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
 
         while not env.is_game_over():
             s = env.state_id()
-            pis = []
-            for i in env.available_actions_ids():
-                pis.append(pi[s][i])
-            a = choices(env.available_actions_ids(), weights=pis)[0]
+            a = choices(env.available_actions_ids(), weights=pi[s])[0]
             env.act_with_action_id(a)
             s_history.append(s)
             a_history.append(a)
@@ -156,17 +207,12 @@ def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
 
             Q[s_t][a_t] = returns_sum[(s_t,a_t)]/returns_count[(s_t,a_t)]
             pi[s_t]={a:0.0 for a in env.available_actions_ids()}
-            best_action_idx = np.where(max(Q[s_t]) == Q[s_t])[0][0]
+            best_action_idx = max(Q[s_t], key=Q[s_t].get)
             for i in range(len(pi[s_t])):
                 pi[s_t][i] = 0
             pi[s_t][best_action_idx] = 1.0
-            #
-            # pi_and_Q = PolicyAndActionValueFunction()
-            # pi_and_Q.pi = pi
-            # pi_and_Q.q = Q
 
-        return pi.items(), Q.items()
-        # return pi_and_Q
+        return PolicyAndActionValueFunction(pi, Q)
 
 
 
@@ -179,7 +225,62 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
     """
     env = Env2()
     # TODO
-    pass
+    def epsilon_greedy_policy(Q, epsilon, state):
+        A = defaultdict(
+            lambda: {
+                a: 1 * epsilon / len(env.available_actions_ids())
+                for a in env.available_actions_ids()
+            }
+        )
+        best_action = max(Q[state], key=Q[state].get)
+
+        A[state][best_action] += (1.0 - epsilon)
+        return A[state]
+
+    epsilon = 0.1
+    num_episodes = 10000
+
+    returns_sum = defaultdict(float)
+    returns_count = defaultdict(float)
+
+    Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
+
+    for i_episode in range(1, num_episodes + 1):
+        if i_episode % 100000 == 0:
+            print("\rEpisode {}/{}.".format(i_episode, num_episodes))
+
+        env.reset()
+        pair_history = []
+        s_history = []
+        while not env.is_game_over():
+            print("start boucle")
+            state = env.state_id()
+            print(state)
+            probs = epsilon_greedy_policy(Q, epsilon, state)
+            print(probs)
+            a = choices(np.arange(len(probs)), weights=probs)[0]
+            print(a)
+            print(("test", env.available_actions_ids()))
+            env.act_with_action_id(a)
+            print("action jouer")
+            r = env.score()
+            pair_history.append(((state, a), r))
+            s_history.append(state)
+            print(s_history)
+            print("boucle")
+        print("fin boucle")
+        G = 0
+        for ((s, a), r) in pair_history:
+            print("start history")
+            first_occurence_idx = next(
+                i for i, (s_a, r) in enumerate(pair_history) if s_a == (s, a))
+            G = sum([r for ((s, a), r) in pair_history[first_occurence_idx:]])
+
+            returns_sum[(s, a)] += G
+            returns_count[(s, a)] += 1.0
+            Q[s][a] = returns_sum[(s, a)] / returns_count[(s, a)]
+
+    return Q, epsilon_greedy_policy
 
 
 def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunction:
@@ -190,7 +291,6 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     env = Env2()
-
     # TODO
     pass
 
@@ -199,11 +299,11 @@ def demo():
     # print("monte_carlo_es_on_tic_tac_toe")
     # print(monte_carlo_es_on_tic_tac_toe_solo())
     # print("on_policy_first_visit_monte_carlo_control_on_tic_tac_toe")
-    # print(on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo())
+    print(on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo())
     # print("off_policy_first_visit_monte_carlo_control_on_tic_tac_toe")
     # print(off_policy_monte_carlo_control_on_tic_tac_toe_solo())
 
-    print("secret env")
-    print(monte_carlo_es_on_secret_env2())
-    print(on_policy_first_visit_monte_carlo_control_on_secret_env2())
-    print(off_policy_monte_carlo_control_on_secret_env2())
+    # print("secret env")
+    # print(monte_carlo_es_on_secret_env2())
+    # print(on_policy_first_visit_monte_carlo_control_on_secret_env2())
+    # print(off_policy_monte_carlo_control_on_secret_env2())
