@@ -31,6 +31,7 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
 
         #env.act_with_action_id(a0)
         # faire jouer player0 et player1
+        
         s_history = [s0]
         a_history = [a0]
         s_p_history = [env.state_id()]
