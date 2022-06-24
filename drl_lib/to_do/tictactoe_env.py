@@ -8,16 +8,16 @@ class TicTacToeEnv():
     def __init__(self,size=3) -> None:
         self.size=size
         self.board = np.zeros((size, size))
-        self.actions=np.arange(0,size*size)
+        self.actions=np.arange(size*size)
         self.players = np.array([Player(1,'R'),Player(2,'A')])
 
     
-    def state_id(self):
+    def state_id(self) ->int:
         state = 0
         for i in range(self.size):
             for j in range(self.size):
                 state += self.board[i][j] * pow(self.size, i * self.size + j)
-        return state
+        return int(state)
 
     def is_game_over(self) -> bool:
         if len(self.available_actions_ids())==0:
@@ -83,7 +83,11 @@ class TicTacToeEnv():
         if state == 0:
             return  np.zeros((self.size, self.size))
         digits = []
+<<<<<<< HEAD
         while len(digits) < 9:
+=======
+        while len(digits) < self.size*self.size:
+>>>>>>> bff91c87d4d16369d667be2d9d889874c8a1e1e6
             digits.append(int(state % b))
             state //= b
         digits = np.array(digits)
