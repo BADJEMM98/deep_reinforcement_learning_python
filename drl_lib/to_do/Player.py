@@ -1,6 +1,5 @@
 from typing import Optional
 import numpy as np
-from to_do.tictactoe_env import TicTacToeEnv
 
 
 class Player():

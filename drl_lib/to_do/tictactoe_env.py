@@ -1,12 +1,11 @@
-
 from os import access
 import numpy as np
 
-from to_do.Player import Player
+from ..to_do.Player import Player
 
 
 class TicTacToeEnv():
-    def __init__(self,size) -> None:
+    def __init__(self,size=3) -> None:
         self.size=size
         self.board = np.zeros((size, size))
         self.actions=np.arange(0,size*size)
@@ -38,7 +37,7 @@ class TicTacToeEnv():
                     self.players[1].is_winner = True
                 return True
             else:
-                for i in self.size:
+                for i in range(self.size):
                     # Check horizontals
                     if self.board[i][0]==self.board[i][1] and self.board[i][1] == self.board[i][2] and self.board[i][0] !=0:
                         if self.players[0].sign == self.board[i][0]:
@@ -80,13 +79,6 @@ class TicTacToeEnv():
     def reset(self):
         self.board = np.zeros((self.size, self.size))
 
-        # Board : board de Tictactoe, taille 3x3
-# 0 => Pas de pion
-# 1 => Pion Joueur 1
-# 2 => Pion Joueur 2
-# 120
-# 010
-# 201
     def convertStateToBoard(self,state, b=3):
         if state == 0:
             return  np.zeros((self.size, self.size))
