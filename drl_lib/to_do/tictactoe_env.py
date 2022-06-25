@@ -83,11 +83,7 @@ class TicTacToeEnv():
         if state == 0:
             return  np.zeros((self.size, self.size))
         digits = []
-<<<<<<< HEAD
-        while len(digits) < 9:
-=======
         while len(digits) < self.size*self.size:
->>>>>>> bff91c87d4d16369d667be2d9d889874c8a1e1e6
             digits.append(int(state % b))
             state //= b
         digits = np.array(digits)
