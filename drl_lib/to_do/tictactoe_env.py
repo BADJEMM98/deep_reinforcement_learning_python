@@ -62,7 +62,9 @@ class TicTacToeEnv():
     def score(self) -> float:
         score = 0
         if self.players[1].is_winner:
-            score = 10
+            score = 1
+        if self.players[0].is_winner:
+            score = -1
         
         return score
 
@@ -73,7 +75,7 @@ class TicTacToeEnv():
             for j in range(self.size):
                 if self.board[i, j] == 0:
                     positions.append(cpt)  
-                    cpt+=1
+                cpt+=1
         return np.array(positions)
 
     def reset(self):
