@@ -46,13 +46,13 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
         r_history = [env.score()]
 
         while not env.is_game_over():
-            print('evaluate')
             s = env.state_id()
             pis = [pi[s][a] for a in env.available_actions_ids()]
             a = choices(env.available_actions_ids(), weights=pis)[0]
 
             # faire jouer player[1]
             env.act_with_action_id(env.players[1].sign,a)
+            
 
             # faire jouer player[0]
             rand_action = env.players[0].play(env.available_actions_ids())
@@ -62,8 +62,6 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
             a_history.append(a)
             s_p_history.append(env.state_id())
             r_history.append(env.score())
-
-        print('fin')
 
         G = 0
         for t in reversed(range(len(s_history))):
