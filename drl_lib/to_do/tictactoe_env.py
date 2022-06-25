@@ -63,7 +63,7 @@ class TicTacToeEnv():
         score = 0
         if self.players[1].is_winner:
             score = 1
-        elif self.players[0].is_winner:
+        if self.players[0].is_winner:
             score = -1
         
         return score
