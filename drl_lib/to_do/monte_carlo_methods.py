@@ -146,6 +146,11 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
             env.act_with_action_id(env.players[1].sign, a)
 
             if env.is_game_over():
+                s_history.append(state)
+                a_history.append(a)
+                s_p_history.append(env.state_id())
+                r_history.append(env.score())
+                pair_history.append(((state, a), env.score()))
                 break
             rand_action = env.players[0].play(env.available_actions_ids())
             env.act_with_action_id(env.players[0].sign, rand_action)
