@@ -13,4 +13,4 @@ def convertStateToBoard(state, b=3):
         #     np.insert(digits,0,0)
         return digits.reshape(b, b)
 
-print(convertStateToBoard(13208))
+print(convertStateToBoard(4031))

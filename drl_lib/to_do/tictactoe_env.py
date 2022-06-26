@@ -20,39 +20,39 @@ class TicTacToeEnv():
         return int(state)
 
     def is_game_over(self) -> bool:
+        term = False
         if len(self.available_actions_ids())==0:
+            term = True
+            # Check diagonals
+        if (self.board[0][0]==self.board[1][1] == self.board[2][2]) and self.board[0][0] !=0:
+            if self.players[0].sign == self.board[0][0]:
+                self.players[0].is_winner = True
+            else:
+                self.players[1].is_winner = True
+            return True
+        elif (self.board[2][0]==self.board[1][1] == self.board[0][2]) and self.board[2][0] !=0:
+            if self.players[0].sign == self.board[2][0]:
+                self.players[0].is_winner = True
+            else:
+                self.players[1].is_winner = True
             return True
         else:
-            # Check diagonals
-            if self.board[0][0]==self.board[1][1] and self.board[1][1] == self.board[2][2] and self.board[0][0] !=0:
-                if self.players[0].sign == self.board[0][0]:
-                    self.players[0].is_winner = True
-                else:
-                    self.players[1].is_winner = True
-                return True
-            elif self.board[2][0]==self.board[1][1] and self.board[1][1] == self.board[0][2] and self.board[2][0] !=0:
-                if self.players[0].sign == self.board[2][0]:
-                    self.players[0].is_winner = True
-                else:
-                    self.players[1].is_winner = True
-                return True
-            else:
-                for i in range(self.size):
-                    # Check horizontals
-                    if self.board[i][0]==self.board[i][1] and self.board[i][1] == self.board[i][2] and self.board[i][0] !=0:
-                        if self.players[0].sign == self.board[i][0]:
-                            self.players[0].is_winner = True
-                        else:
-                            self.players[1].is_winner = True
-                        return True
-                    # Check verticals
-                    elif self.board[0][i]==self.board[1][i] and self.board[1][i] == self.board[2][i] and self.board[0][i] !=0:
-                        if self.players[0].sign == self.board[0][0]:
-                            self.players[0].is_winner = True
-                        else:
-                            self.players[1].is_winner = True
-                        return True
-        return False
+            for i in range(self.size):
+                # Check horizontals
+                if (self.board[i][0]==self.board[i][1] == self.board[i][2]) and self.board[i][0] !=0:
+                    if self.players[0].sign == self.board[i][0]:
+                        self.players[0].is_winner = True
+                    else:
+                        self.players[1].is_winner = True
+                    return True
+                # Check verticals
+                elif (self.board[0][i]==self.board[1][i] == self.board[2][i]) and self.board[0][i] !=0:
+                    if self.players[0].sign == self.board[0][i]:
+                        self.players[0].is_winner = True
+                    else:
+                        self.players[1].is_winner = True
+                    return True
+        return term
 
     def act_with_action_id(self, player_sign:int,action_id: int):
         i= action_id // self.size
@@ -61,10 +61,13 @@ class TicTacToeEnv():
 
     def score(self) -> float:
         score = 0
+        nb_coups = (self.board == 2).sum()
         if self.players[1].is_winner:
             score = 1
+            if nb_coups<=3:
+                score+=1
         if self.players[0].is_winner:
-            score = -1
+            score = -10
         
         return score
 
@@ -80,6 +83,8 @@ class TicTacToeEnv():
 
     def reset(self):
         self.board = np.zeros((self.size, self.size))
+        self.players[0].is_winner = False
+        self.players[1].is_winner = False
 
     def convertStateToBoard(self,state, b=3):
         if state == 0:
