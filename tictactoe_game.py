@@ -58,7 +58,7 @@ def draw_figures(board,size):
 
 def draw_window(board,size):
     WIN.fill(BGCOLOR)
-    clock.tick(10)
+    clock.tick(3)
     draw_grid()
     draw_figures(board,size)
     pygame.display.flip()
@@ -84,10 +84,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                col = event.pos[0]//BLOCKWIDTH
-                row = event.pos[1]//BLOCKHEIGHT
-                print(col,row)
         while not env.is_game_over():
             s = env.state_id()
             # print(s)
@@ -103,9 +99,21 @@ def main():
 
             # faire jouer player[0]
             if not env.is_game_over():
-                rand_action = env.players[0].play(env.available_actions_ids())
-                env.act_with_action_id(env.players[0].sign,rand_action)
+                action = None
+                while True:
+                    for event in pygame.event.get():
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            col = event.pos[0]//BLOCKWIDTH
+                            row = event.pos[1]//BLOCKHEIGHT
+                            action = find_action(col,row,env.available_actions_ids(),env.size)
+                    if action is not None:
+                        break
+                env.act_with_action_id(env.players[0].sign,action)
                 draw_window(env.board,env.size)
+            # if not env.is_game_over():
+            #     rand_action = env.players[0].play(env.available_actions_ids())
+            #     env.act_with_action_id(env.players[0].sign,rand_action)
+            #     draw_window(env.board,env.size)
 
         env.is_game_over()
 
