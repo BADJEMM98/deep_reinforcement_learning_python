@@ -385,13 +385,13 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
         env.reset()
         s0 = env.state_id()
         l_a = env.available_actions_ids()
-        print(l_a, "l_a")
-        print("pi[s0]", pi[s0])
+        print("l_a", l_a)
+        for a in l_a:
+            print("a", pi[a])
+            print("pi[s0]", pi[s0])
         pis = [pi[s0][a] for a in l_a]
 
         a0 = choices(env.available_actions_ids(), weights=pis)[0]
-        # print(a0)
-        # faire jouer player[1]
         env.act_with_action_id(a0)
 
         s_history = [s0]
@@ -403,12 +403,12 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
             s = env.state_id()
             # print("s", s)
             # print(actions, "actions", env.available_actions_ids())
-            print("pi[s]", pi[s])
+            # print("pi[s]", pi[s])
             l_a = env.available_actions_ids()
-            print(l_a, "l_a why")
+            # print(l_a, "l_a why")
 
             pis = [pi[s][a] for a in l_a]
-            print("pis", pis)
+            # print("pis", pis)
             a = choices(env.available_actions_ids(), weights=pis)[0]
 
             # faire jouer player[1]
@@ -422,16 +422,16 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
         G = 0.0
         W = 1.0
         discount = 0.999
-        print(s_history, "s_history")
-        print( a_history, "a_history")
+        # print(s_history, "s_history")
+        # print( a_history, "a_history")
 
 
         for t in range(len(s_p_history))[::-1]:
             print(t, "t")
             state, action, reward = s_history[t], a_history[t], r_history[t]
             G = discount * G + reward
-            print(state, "state", action, "action")
-            print(C[state], "C[state]")
+            # print(state, "state", action, "action")
+            # print(C[state], "C[state]")
 
             C[state][action] += W
             Q[state][action] += (W / C[state][action]) * (G - Q[state][action])
