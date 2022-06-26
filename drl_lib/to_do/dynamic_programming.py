@@ -62,7 +62,6 @@ def policy_evaluation_on_line_world() -> ValueFunction:
 
     return Vs
 
-
 def policy_iteration_on_line_world() -> PolicyAndValueFunction:
     """
     Creates a Line World of 7 cells (leftmost and rightmost are terminal, with -1 and 1 reward respectively)
@@ -228,7 +227,7 @@ def policy_iteration_on_grid_world() -> PolicyAndValueFunction:
     return pi, Vs
 
 
-def value_iteration_on_grid_world(env) -> PolicyAndValueFunction:
+def value_iteration_on_grid_world() -> PolicyAndValueFunction:
     """
     Creates a Grid World of 5x5 cells (upper rightmost and lower rightmost are terminal, with -1 and 1 reward respectively)
     Launches a Value Iteration Algorithm in order to find the Optimal Policy and its Value Function
@@ -236,44 +235,39 @@ def value_iteration_on_grid_world(env) -> PolicyAndValueFunction:
     """
     grid_size = 5
     nb_cells = grid_size * grid_size
-    # states = np.arange(nb_cells)
-    # actions = np.array([0, 1, 2, 3])  # 0:UP, 1:DOWN, 2:LEFT, 3:RIGHT
-    # rewards = np.array([-1.0, 0.0, 1.0])
-    # transition_matrix = init_grid_transition(grid_size, states, actions, rewards)
-    #
-    # terminal_states = [states[grid_size - 1], states[nb_cells - 1]]
-    #
-    # env_data = {
-    #     "states": states,
-    #     "actions": actions,
-    #     "rewards": rewards,
-    #     "terminal_states": terminal_states,
-    #     "transition_matrix": transition_matrix,
-    # }
-    # env = MyMDPEnv(env_data)
+    states = np.arange(nb_cells)
+    actions = np.array([0, 1, 2, 3])  # 0:UP, 1:DOWN, 2:LEFT, 3:RIGHT
+    rewards = np.array([-1.0, 0.0, 1.0])
+    transition_matrix = init_grid_transition(grid_size, states, actions, rewards)
+
+    terminal_states = [states[grid_size - 1], states[nb_cells - 1]]
+
+    env_data = {
+        "states": states,
+        "actions": actions,
+        "rewards": rewards,
+        "terminal_states": terminal_states,
+        "transition_matrix": transition_matrix,
+    }
+    env = MyMDPEnv(env_data)
     #
     # # TODO
     theta = 0.0000001
     V = np.random.random((nb_cells,))
     Vs: ValueFunction = {s: V[s] for s in env.states()}
-    # Vs[grid_size - 1] = 0.0
-    # Vs[nb_cells - 1] = 0.0
-    # for state in terminal_states:
-    #    Vs[state] = 0.0
+
+    for state in terminal_states:
+       Vs[state] = 0.0
     for s in env.states():
         if env.is_state_terminal(s):
             Vs[s] = 0.0
-
 
     pi = {s: {a: random() for a in env.actions()} for s in env.states()}
     for s in env.states():
         pi[s] = {
             a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()
         }
-    # pi[grid_size - 1] = {a: 0.0 for a in env.actions()}
-    # pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
-    # for state in terminal_states:
-    #     pi[state] = {a: 0.0 for a in env.actions()}
+
     for s in env.states():
         if env.is_state_terminal(s):
             pi[s] = {a: 0.0 for a in env.actions()}
@@ -281,7 +275,7 @@ def value_iteration_on_grid_world(env) -> PolicyAndValueFunction:
     Vs = policy_eval(env, pi, Vs, theta=theta)
     gamma = 0.99
 
-    pi, Vs = value_iteration(env, Vs, pi, gamma, theta)
+    pi, Vs = value_iteration(env,Vs, pi, gamma, theta)
 
     return pi, Vs
 
@@ -372,16 +366,16 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
 
 
 def demo():
-    print(policy_evaluation_on_line_world())
-    print(policy_iteration_on_line_world())
-    print(value_iteration_on_line_world())
+    # print(policy_evaluation_on_line_world())
+    # print(policy_iteration_on_line_world())
+    # print(value_iteration_on_line_world())
 
     print("Grid")
-    print(policy_evaluation_on_grid_world())
-    print(policy_iteration_on_grid_world())
+    # print(policy_evaluation_on_grid_world())
+    # print(policy_iteration_on_grid_world())
     print(value_iteration_on_grid_world())
 
-    print("Secret env")
-    print(policy_evaluation_on_secret_env1())
-    print(policy_iteration_on_secret_env1())
-    print(value_iteration_on_secret_env1())
+    # print("Secret env")
+    # print(policy_evaluation_on_secret_env1())
+    # print(policy_iteration_on_secret_env1())
+    # print(value_iteration_on_secret_env1())
