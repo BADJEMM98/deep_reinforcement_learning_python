@@ -3,7 +3,8 @@ from tracemalloc import start
 import pygame
 import numpy as np
 from drl_lib.to_do.tictactoe_env import TicTacToeEnv
-from drl_lib.to_do.monte_carlo_methods import monte_carlo_es_on_tic_tac_toe_solo, off_policy_monte_carlo_control_on_tic_tac_toe_solo, on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo
+from drl_lib.to_do.monte_carlo_methods import monte_carlo_es_on_tic_tac_toe_solo, off_policy_monte_carlo_control_on_tic_tac_toe_solo,on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo
+from drl_lib.to_do.temporal_difference_learning import  q_learning_on_tic_tac_toe_solo
 
 pygame.init()
 WIDTH, HEIGHT = 470, 470
@@ -72,7 +73,8 @@ def find_action(x, y, actions, grid_size):
 def main():
     run=True
     env = TicTacToeEnv()
-    pi_and_q = off_policy_monte_carlo_control_on_tic_tac_toe_solo()
+    #pi_and_q = on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
+    pi_and_q = monte_carlo_es_on_tic_tac_toe_solo()
     # off_policy_monte_carlo_control_on_tic_tac_toe_solo()
     #on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
     #  monte_carlo_es_on_tic_tac_toe_solo()
@@ -84,8 +86,11 @@ def main():
                 run = False
         while not env.is_game_over():
             s = env.state_id()
-            # print(s)
+            print(env.convertStateToBoard(s))
+            print("state===",s)
             pis = [pi_and_q.pi[s][a] for a in env.available_actions_ids()]
+            print("available_actions ", env.available_actions_ids())
+            print("pis===",pis)
             if max(pis) == 0.0:
                 a = choice(env.available_actions_ids())
             else:
