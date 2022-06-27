@@ -1,4 +1,5 @@
 from collections import defaultdict
+from email import policy
 from random import random, choice, choices
 
 import numpy as np
@@ -92,7 +93,6 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     return pi_and_Q
 
 
-
 def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
     Creates a TicTacToe Solo environment (Single player versus Uniform Random Opponent)
@@ -102,18 +102,19 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     # TODO
-    def epsilon_greedy_policy(actions, Q, epsilon, state):
-        A = defaultdict(
-            lambda: {
-                a: 1 * epsilon / len(actions)
-                for a in actions
-            }
-        )
-        best_action = max(Q[state], key=Q[state].get)
-        A[state][best_action] += (1.0 - epsilon)
+    def epsilon_greedy_policy(env, Q, epsilon, state, A):
+        rand = random()
+        if rand > epsilon:
+            best_action = max(Q[state], key=Q[state].get)
+            for a in env.available_actions_ids():
+                A[state][a] = 0
+            A[state][best_action] = 1.0
+        else:
+            best_action = choice(env.available_actions_ids())
+
         return A[state]
 
-    epsilon = 0.1
+    epsilon = 0.3
     num_episodes = 10000
 
     env = TicTacToeEnv()
@@ -121,15 +122,11 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
     returns_sum = defaultdict(float)
     returns_count = defaultdict(float)
 
-    actions = env.available_actions_ids()
-
-    Q = defaultdict(lambda: {a: 0.0 for a in actions})
-    pi = defaultdict(lambda: {a: 1 for a in actions})
-
+    Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
+    pi = defaultdict(lambda: {a: random() for a in env.available_actions_ids()})
     for i_episode in range(1, num_episodes + 1):
-        # if i_episode % (num_episodes/5) == 0:
-            # print("\rEpisode {}/{}.".format(i_episode, num_episodes))
-            # print(pi[0])
+        if i_episode % (num_episodes / 5) == 0:
+            print("\rEpisode {}/{}.".format(i_episode, num_episodes))
 
         env.reset()
         pair_history = []
@@ -139,7 +136,7 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
         r_history = []
         while not env.is_game_over():
             state = env.state_id()
-            pi[state] = epsilon_greedy_policy(actions, Q, epsilon, state)
+            pi[state] = epsilon_greedy_policy(env, Q, epsilon, state, pi)
             keys = []
             for i in pi[state].keys():
                 keys.append(i)
@@ -175,6 +172,16 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
 
             pi_and_Q = PolicyAndActionValueFunction(pi, Q)
     return pi_and_Q
+
+def create_target_policy(Q):
+    
+    def policy_fn(state):
+        A = {a:0.0 for a in Q[state].keys()}
+        best_action = max(Q[state],key=Q[state].get)
+        A[best_action] = 1.0
+        return A
+    return policy_fn
+
     
 def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
@@ -189,8 +196,8 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValue
     Q = defaultdict(lambda: {a:0.0 for a in actions})
     C = defaultdict(lambda: {a:0.0 for a in actions})
 
-    pi = defaultdict(lambda: {a:random() for a in actions})
-    target_policy = pi
+    pi = defaultdict(lambda: {a:1/len(actions) for a in actions})
+    target_policy = create_target_policy(Q)
     num_episodes = 50000
 
     
@@ -229,7 +236,7 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValue
                 # faire jouer player[0]
                 rand_action = env.players[0].play(env.available_actions_ids())
                 env.act_with_action_id(env.players[0].sign,rand_action)
-            
+            env.is_game_over()
             s_history.append(s)
             a_history.append(a)
             s_p_history.append(env.state_id())
@@ -239,23 +246,22 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValue
         W = 1.0
         discount=0.999
         
-        for t in range(len(s_p_history))[::-1]:
-            state, action, reward = s_p_history[t],a_history[t],r_history[t]
+        for t in range(len(s_history))[::-1]:
+            state, action, reward = s_history[t],a_history[t],r_history[t]
             G = discount*G + reward
             C[state][action] += W
             Q[state][action] += (W/C[state][action]) * (G - Q[state][action])
-            target_policy[state]={a:0.0 for a in actions}
             best_action = max(Q[state],key=Q[state].get)
-            target_policy[state][best_action] = 1.0
 
             if action != best_action:
                 break
                 
-            W = W * (target_policy[state][action]/pi[state][action])
+            W = W * (target_policy(state)[action]/pi[state][action])
+    
+    final_policy = {state:target_policy(state) for state in Q.keys()}
         
-    return PolicyAndActionValueFunction(target_policy,Q)
+    return PolicyAndActionValueFunction(final_policy,Q)
   
-
 
 def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
     """
@@ -319,7 +325,6 @@ def monte_carlo_es_on_secret_env2() -> PolicyAndActionValueFunction:
         return pi_and_Q
 
 
-
 def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunction:
     """
     Creates a Secret Env2
@@ -329,16 +334,16 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
     """
     env = Env2()
     # TODO
-    def epsilon_greedy_policy(env, Q, epsilon, state):
-        A = defaultdict(
-            lambda: {
-                a: 1 * epsilon / len(env.available_actions_ids())
-                for a in env.available_actions_ids()
-            }
-        )
-        best_action = max(Q[state], key=Q[state].get)
+    def epsilon_greedy_policy(env, Q, epsilon, state, A):
+        rand = random()
+        if rand > epsilon:
+            best_action = max(Q[state], key=Q[state].get)
+            for a in env.available_actions_ids():
+                A[state][a] = 0
+            A[state][best_action] = 1.0
+        else:
+            best_action = choice(env.available_actions_ids())
 
-        A[state][best_action] += (1.0 - epsilon)
         return A[state]
 
     epsilon = 0.1
@@ -351,15 +356,15 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
     pi = defaultdict(lambda: {a : random for a in env.available_actions_ids()})
 
     for i_episode in range(1, num_episodes + 1):
-        # if i_episode % 1 == 0:
-        #     print("\rEpisode {}/{}.".format(i_episode, num_episodes))
+        if i_episode % (num_episodes/5) == 0:
+            print("\rEpisode {}/{}.".format(i_episode, num_episodes))
 
         env.reset()
         pair_history = []
         s_history = []
         while not env.is_game_over():
             state = env.state_id()
-            pi[state] = epsilon_greedy_policy(env, Q, epsilon, state)
+            pi[state] = epsilon_greedy_policy(env, Q, epsilon, state, pi)
             keys = []
             for i in pi[state].keys():
                 keys.append(i)
@@ -403,13 +408,13 @@ def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunct
 
 def demo():
     #print("monte_carlo_es_on_tic_tac_toe")
-    print(monte_carlo_es_on_tic_tac_toe_solo())
-    #print("on_policy_first_visit_monte_carlo_control_on_tic_tac_toe")
-    # print(on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo())
+    #print(monte_carlo_es_on_tic_tac_toe_solo())
+    print("on_policy_first_visit_monte_carlo_control_on_tic_tac_toe")
+    print(on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo())
     # print("off_policy_first_visit_monte_carlo_control_on_tic_tac_toe")
     # print(off_policy_monte_carlo_control_on_tic_tac_toe_solo())
 
-    # print("secret env")
+    print("secret env")
     # print(monte_carlo_es_on_secret_env2())
-    #print(on_policy_first_visit_monte_carlo_control_on_secret_env2())
+    print(on_policy_first_visit_monte_carlo_control_on_secret_env2())
     #print(off_policy_monte_carlo_control_on_secret_env2())
