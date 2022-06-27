@@ -1,4 +1,5 @@
 from collections import defaultdict
+from email import policy
 from random import random, choice, choices
 
 import numpy as np
@@ -175,6 +176,16 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
 
             pi_and_Q = PolicyAndActionValueFunction(pi, Q)
     return pi_and_Q
+
+def create_target_policy(Q):
+    
+    def policy_fn(state):
+        A = {a:0.0 for a in Q[state].keys()}
+        best_action = max(Q[state],key=Q[state].get)
+        A[best_action] = 1.0
+        return A
+    return policy_fn
+
     
 def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
@@ -189,8 +200,8 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValue
     Q = defaultdict(lambda: {a:0.0 for a in actions})
     C = defaultdict(lambda: {a:0.0 for a in actions})
 
-    pi = defaultdict(lambda: {a:random() for a in actions})
-    target_policy = pi
+    pi = defaultdict(lambda: {a:1/len(actions) for a in actions})
+    target_policy = create_target_policy(Q)
     num_episodes = 50000
 
     
@@ -229,7 +240,7 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValue
                 # faire jouer player[0]
                 rand_action = env.players[0].play(env.available_actions_ids())
                 env.act_with_action_id(env.players[0].sign,rand_action)
-            
+            env.is_game_over()
             s_history.append(s)
             a_history.append(a)
             s_p_history.append(env.state_id())
@@ -239,21 +250,21 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValue
         W = 1.0
         discount=0.999
         
-        for t in range(len(s_p_history))[::-1]:
-            state, action, reward = s_p_history[t],a_history[t],r_history[t]
+        for t in range(len(s_history))[::-1]:
+            state, action, reward = s_history[t],a_history[t],r_history[t]
             G = discount*G + reward
             C[state][action] += W
             Q[state][action] += (W/C[state][action]) * (G - Q[state][action])
-            target_policy[state]={a:0.0 for a in actions}
             best_action = max(Q[state],key=Q[state].get)
-            target_policy[state][best_action] = 1.0
 
             if action != best_action:
                 break
                 
-            W = W * (target_policy[state][action]/pi[state][action])
+            W = W * (target_policy(state)[action]/pi[state][action])
+    
+    final_policy = {state:target_policy(state) for state in Q.keys()}
         
-    return PolicyAndActionValueFunction(target_policy,Q)
+    return PolicyAndActionValueFunction(final_policy,Q)
   
 
 

@@ -96,22 +96,22 @@ def main():
             draw_window(env.board,env.size)
 
             # faire jouer player[0]
-            if not env.is_game_over():
-                action = None
-                while True:
-                    for event in pygame.event.get():
-                        if event.type == pygame.MOUSEBUTTONDOWN:
-                            col = event.pos[0]//BLOCKWIDTH
-                            row = event.pos[1]//BLOCKHEIGHT
-                            action = find_action(col,row,env.available_actions_ids(),env.size)
-                    if action is not None:
-                        break
-                env.act_with_action_id(env.players[0].sign,action)
-                draw_window(env.board,env.size)
             # if not env.is_game_over():
-            #     rand_action = env.players[0].play(env.available_actions_ids())
-            #     env.act_with_action_id(env.players[0].sign,rand_action)
+            #     action = None
+            #     while True:
+            #         for event in pygame.event.get():
+            #             if event.type == pygame.MOUSEBUTTONDOWN:
+            #                 col = event.pos[0]//BLOCKWIDTH
+            #                 row = event.pos[1]//BLOCKHEIGHT
+            #                 action = find_action(col,row,env.available_actions_ids(),env.size)
+            #         if action is not None:
+            #             break
+            #     env.act_with_action_id(env.players[0].sign,action)
             #     draw_window(env.board,env.size)
+            if not env.is_game_over():
+                rand_action = env.players[0].play(env.available_actions_ids())
+                env.act_with_action_id(env.players[0].sign,rand_action)
+                draw_window(env.board,env.size)
 
         env.is_game_over()
 
