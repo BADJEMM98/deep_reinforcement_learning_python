@@ -1,3 +1,4 @@
+import random
 from random import choice, choices
 from tracemalloc import start
 import pygame
@@ -58,7 +59,7 @@ def draw_figures(board,size):
 
 def draw_window(board,size):
     WIN.fill(BGCOLOR)
-    clock.tick(3)
+    clock.tick()
     draw_grid()
     draw_figures(board,size)
     pygame.display.flip()
@@ -75,10 +76,14 @@ def main():
     env = TicTacToeEnv()
     #pi_and_q = on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
     pi_and_q = q_learning_on_tic_tac_toe_solo()
-    # off_policy_monte_carlo_control_on_tic_tac_toe_solo()
-    #on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
-    #  monte_carlo_es_on_tic_tac_toe_solo()
-    # q_learning_on_tic_tac_toe_solo()
+    #pi_and_q = off_policy_monte_carlo_control_on_tic_tac_toe_solo()
+    #pi_and_q = sarsa_on_tic_tac_toe_solo()
+    #pi_and_q = monte_carlo_es_on_tic_tac_toe_solo()
+
+    pi_and_q = on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
+    all_keys = pi_and_q.pi.keys()
+    print(pi_and_q.pi)
+    # pi_and_q = monte_carlo_es_on_tic_tac_toe_solo()
     cpt = 0
     nb_parties = 100
     while run:
@@ -92,11 +97,12 @@ def main():
                 a = choice(env.available_actions_ids())
                 start = False
             else:
-                print(env.convertStateToBoard(s))
-                print("state===",s)
+
+                if not all_keys.__contains__(s):
+                    pi_and_q.pi[s] = {a: random.random() for a in env.available_actions_ids()}
+                    pi_and_q.q[s] = {a: 0 for a in env.available_actions_ids()}
+               
                 pis = [pi_and_q.pi[s][a] for a in env.available_actions_ids()]
-                print("available_actions ", env.available_actions_ids())
-                print("pis===",pis, "pi===", pi_and_q.pi[s])
                 if max(pis) == 0.0:
                     a = choice(env.available_actions_ids())
                 else:
@@ -107,6 +113,7 @@ def main():
             draw_window(env.board,env.size)
 
             # faire jouer player[0]
+            # HUMAN PLAYER
             if not env.is_game_over():
                 action = None
                 while True:
@@ -119,6 +126,8 @@ def main():
                         break
                 env.act_with_action_id(env.players[0].sign,action)
                 draw_window(env.board,env.size)
+
+            # RANDOM PLAYER
             # if not env.is_game_over():
             #     rand_action = env.players[0].play(env.available_actions_ids())
             #     env.act_with_action_id(env.players[0].sign,rand_action)

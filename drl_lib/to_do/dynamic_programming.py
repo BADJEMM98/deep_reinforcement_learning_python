@@ -236,30 +236,26 @@ def value_iteration_on_grid_world(env) -> PolicyAndValueFunction:
     """
     grid_size = 5
     nb_cells = grid_size * grid_size
-    # states = np.arange(nb_cells)
-    # actions = np.array([0, 1, 2, 3])  # 0:UP, 1:DOWN, 2:LEFT, 3:RIGHT
-    # rewards = np.array([-1.0, 0.0, 1.0])
-    # transition_matrix = init_grid_transition(grid_size, states, actions, rewards)
-    #
-    # terminal_states = [states[grid_size - 1], states[nb_cells - 1]]
-    #
-    # env_data = {
-    #     "states": states,
-    #     "actions": actions,
-    #     "rewards": rewards,
-    #     "terminal_states": terminal_states,
-    #     "transition_matrix": transition_matrix,
-    # }
-    # env = MyMDPEnv(env_data)
-    #
+    states = np.arange(nb_cells)
+    actions = np.array([0, 1, 2, 3])  # 0:UP, 1:DOWN, 2:LEFT, 3:RIGHT
+    rewards = np.array([-1.0, 0.0, 1.0])
+    transition_matrix = init_grid_transition(grid_size, states, actions, rewards)
+    
+    terminal_states = [states[grid_size - 1], states[nb_cells - 1]]
+    
+    env_data = {
+        "states": states,
+        "actions": actions,
+        "rewards": rewards,
+        "terminal_states": terminal_states,
+        "transition_matrix": transition_matrix,
+    }
+    env = MyMDPEnv(env_data)
+    
     # # TODO
     theta = 0.0000001
     V = np.random.random((nb_cells,))
     Vs: ValueFunction = {s: V[s] for s in env.states()}
-    # Vs[grid_size - 1] = 0.0
-    # Vs[nb_cells - 1] = 0.0
-    # for state in terminal_states:
-    #    Vs[state] = 0.0
     for s in env.states():
         if env.is_state_terminal(s):
             Vs[s] = 0.0
@@ -270,10 +266,6 @@ def value_iteration_on_grid_world(env) -> PolicyAndValueFunction:
         pi[s] = {
             a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()
         }
-    # pi[grid_size - 1] = {a: 0.0 for a in env.actions()}
-    # pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
-    # for state in terminal_states:
-    #     pi[state] = {a: 0.0 for a in env.actions()}
     for s in env.states():
         if env.is_state_terminal(s):
             pi[s] = {a: 0.0 for a in env.actions()}
