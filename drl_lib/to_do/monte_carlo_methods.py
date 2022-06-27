@@ -21,14 +21,14 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     returns_count = defaultdict(float)
     actions = env.available_actions_ids()
     Q = defaultdict(lambda: {a:0.0 for a in actions})
-    pi = defaultdict(lambda: {a:random() for a in actions})
+    pi = defaultdict(lambda: {a:1.0/len(actions) for a in actions})
     num_episodes = 50000
 
     for i in range(num_episodes):
         env.reset()
         s0 = env.state_id()
-        pis = [pi[s0][a] for a in env.available_actions_ids()]
-        a0 = choices(env.available_actions_ids(), weights=pis)[0]
+        # pis = [pi[s0][a] for a in env.available_actions_ids()]
+        a0 = choice(env.available_actions_ids())
 
         # faire jouer player[1]
         env.act_with_action_id(env.players[1].sign,a0)
@@ -69,7 +69,7 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
         discount = 0.999
         for t in reversed(range(len(s_history))):
             G = discount * G + r_history[t]
-            s_t = s_p_history[t]
+            s_t = s_history[t]
             a_t = a_history[t]
 
             appear = False
@@ -83,8 +83,7 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
             returns_sum[(s_t,a_t)] += G
             returns_count[(s_t,a_t)] += 1.0
             Q[s_t][a_t] = returns_sum[(s_t,a_t)]/returns_count[(s_t,a_t)]
-            for a in actions:
-                pi[s_t][a]=0.0
+            pi[s_t] = {a:0.0 for a in Q[s_t].keys()}
             best_action = max(Q[s_t],key=Q[s_t].get)
             pi[s_t][best_action] = 1.0
 
@@ -140,7 +139,8 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
         r_history = []
         while not env.is_game_over():
             state = env.state_id()
-            pi[state] = epsilon_greedy_policy(actions, Q, epsilon, state)
+            list_actions = np.array(list(Q[state].keys()))
+            pi[state] = epsilon_greedy_policy(list_actions, Q, epsilon, state)
             keys = []
             for i in pi[state].keys():
                 keys.append(i)
@@ -340,11 +340,12 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
     """
     env = Env2()
     # TODO
-    def epsilon_greedy_policy(env, Q, epsilon, state):
+    def epsilon_greedy_policy(Q, epsilon, state):
+        actions = np.array(Q[state].keys())
         A = defaultdict(
             lambda: {
-                a: 1 * epsilon / len(env.available_actions_ids())
-                for a in env.available_actions_ids()
+                a: 1 * epsilon / len(actions)
+                for a in actions
             }
         )
         best_action = max(Q[state], key=Q[state].get)
@@ -357,9 +358,10 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
 
     returns_sum = defaultdict(float)
     returns_count = defaultdict(float)
-
-    Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
-    pi = defaultdict(lambda: {a : 1 for a in env.available_actions_ids()})
+    actions =  env.available_actions_ids()
+    Q = defaultdict(lambda: {a: 0.0 for a in actions})
+    pi = defaultdict(lambda: {a : 0.0 for a in env.available_actions_ids()})
+    final_policy = {}
 
     for i_episode in range(1, num_episodes + 1):
         # if i_episode % 1 == 0:
@@ -370,7 +372,7 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
         s_history = []
         while not env.is_game_over():
             state = env.state_id()
-            pi[state] = epsilon_greedy_policy(env, Q, epsilon, state)
+            pi[state] = epsilon_greedy_policy(Q, epsilon, state)
             keys = []
             for i in pi[state].keys():
                 keys.append(i)
@@ -393,7 +395,11 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
             returns_count[(s, a)] += 1.0
             Q[s][a] = returns_sum[(s, a)] / returns_count[(s, a)]
 
-            pi_and_Q = PolicyAndActionValueFunction(pi, Q)
+        for state in Q.keys():
+            final_policy[state] = {a:0.0 for a in Q[state].keys()}
+            best_action = max(Q[state],key=Q[state].get)
+            final_policy[state][best_action] = 1.0
+        pi_and_Q = PolicyAndActionValueFunction(final_policy, Q)
 
     return pi_and_Q
 

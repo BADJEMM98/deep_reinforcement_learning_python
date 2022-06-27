@@ -77,7 +77,7 @@ def main():
     y_agent=start_y+block_size/2
     lw_agent = LineWorldAgent(x_agent,y_agent)
     # pi,Vs = policy_iteration_on_line_world(lw_env)
-    pi,Vs = value_iteration_on_line_world(lw_env)
+    pi,Vs = policy_iteration_on_line_world()
     while run:
         WIN.fill(WHITE)
         for event in pygame.event.get():

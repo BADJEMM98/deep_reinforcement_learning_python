@@ -74,49 +74,55 @@ def main():
     run=True
     env = TicTacToeEnv()
     #pi_and_q = on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
-    pi_and_q = monte_carlo_es_on_tic_tac_toe_solo()
+    pi_and_q = q_learning_on_tic_tac_toe_solo()
     # off_policy_monte_carlo_control_on_tic_tac_toe_solo()
     #on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
     #  monte_carlo_es_on_tic_tac_toe_solo()
+    # q_learning_on_tic_tac_toe_solo()
     cpt = 0
     nb_parties = 100
     while run:
+        start = True
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
         while not env.is_game_over():
             s = env.state_id()
-            print(env.convertStateToBoard(s))
-            print("state===",s)
-            pis = [pi_and_q.pi[s][a] for a in env.available_actions_ids()]
-            print("available_actions ", env.available_actions_ids())
-            print("pis===",pis)
-            if max(pis) == 0.0:
+            if start == True:
                 a = choice(env.available_actions_ids())
+                start = False
             else:
-                a = choices(env.available_actions_ids(), weights=pis)[0]
+                print(env.convertStateToBoard(s))
+                print("state===",s)
+                pis = [pi_and_q.pi[s][a] for a in env.available_actions_ids()]
+                print("available_actions ", env.available_actions_ids())
+                print("pis===",pis, "pi===", pi_and_q.pi[s])
+                if max(pis) == 0.0:
+                    a = choice(env.available_actions_ids())
+                else:
+                    a = choices(env.available_actions_ids(), weights=pis)[0]
 
             # faire jouer player[1]
             env.act_with_action_id(env.players[1].sign,a)
             draw_window(env.board,env.size)
 
             # faire jouer player[0]
-            # if not env.is_game_over():
-            #     action = None
-            #     while True:
-            #         for event in pygame.event.get():
-            #             if event.type == pygame.MOUSEBUTTONDOWN:
-            #                 col = event.pos[0]//BLOCKWIDTH
-            #                 row = event.pos[1]//BLOCKHEIGHT
-            #                 action = find_action(col,row,env.available_actions_ids(),env.size)
-            #         if action is not None:
-            #             break
-            #     env.act_with_action_id(env.players[0].sign,action)
-            #     draw_window(env.board,env.size)
             if not env.is_game_over():
-                rand_action = env.players[0].play(env.available_actions_ids())
-                env.act_with_action_id(env.players[0].sign,rand_action)
+                action = None
+                while True:
+                    for event in pygame.event.get():
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            col = event.pos[0]//BLOCKWIDTH
+                            row = event.pos[1]//BLOCKHEIGHT
+                            action = find_action(col,row,env.available_actions_ids(),env.size)
+                    if action is not None:
+                        break
+                env.act_with_action_id(env.players[0].sign,action)
                 draw_window(env.board,env.size)
+            # if not env.is_game_over():
+            #     rand_action = env.players[0].play(env.available_actions_ids())
+            #     env.act_with_action_id(env.players[0].sign,rand_action)
+            #     draw_window(env.board,env.size)
 
         env.is_game_over()
 

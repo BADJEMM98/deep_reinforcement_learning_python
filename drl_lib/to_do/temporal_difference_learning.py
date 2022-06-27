@@ -126,7 +126,8 @@ def q_learning_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
 
     actions = env.available_actions_ids()
     Q = defaultdict(lambda: {a:0.0 for a in actions})
-    pi = defaultdict(lambda: {a:0.0 for a in actions})
+    final_policy = {}
+    # pi = defaultdict(lambda: {a:0.0 for a in actions})
 
     # Keeps track of useful statistics
     """stats = plotting.EpisodeStats(
@@ -135,18 +136,19 @@ def q_learning_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
     # Create an epsilon greedy policy function
     # appropriately for environment action space
-    pi[env.state_id()]= epsilon_greedy_policy(actions, Q, epsilon, env.state_id())
+
 
     # For every episode
     for ith_episode in range(num_episodes):
 
         # Reset the environment and pick the first action
         env.reset()
-        state = env.state_id()
+        
         for t in itertools.count():
-            
+            state = env.state_id()
+            pi= epsilon_greedy_policy(actions, Q, epsilon, env.state_id())
             # get probabilities of all actions from current state
-            pis = [pi[state][a] for a in env.available_actions_ids()]
+            pis = [pi[a] for a in env.available_actions_ids()]
 
             if max(pis) == 0.0:
                 action = choice(env.available_actions_ids())
@@ -168,19 +170,21 @@ def q_learning_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
             #stats.episode_lengths[ith_episode] = t
             
             # TD Update
-            best_action = max(Q[env.state_id()],key=Q[env.state_id()].get)
-            #pi[env.state_id][best_action] = 1.0
-            pi[env.state_id()]= epsilon_greedy_policy(actions, Q, epsilon, env.state_id())
+            best_action = max(Q[state],key=Q[state].get)
+            env.is_game_over()
 
             td_target = env.score() + discount_factor * Q[env.state_id()][best_action]
             td_delta = td_target - Q[state][action]
             Q[state][action] += alpha * td_delta
 
             # done is True if episode terminated
-            if env.is_game_over:
+            if env.is_game_over():
                 break
-                
-    pi_and_Q = PolicyAndActionValueFunction(pi, Q)
+    for state in Q.keys():
+        final_policy[state] = {a:0.0 for a in Q[state].keys()}
+        best_action = max(Q[state],key=Q[state].get)
+        final_policy[state][best_action] = 1.0
+    pi_and_Q = PolicyAndActionValueFunction(final_policy, Q)
     return pi_and_Q
 
 
