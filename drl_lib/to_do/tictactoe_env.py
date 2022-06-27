@@ -67,7 +67,7 @@ class TicTacToeEnv():
             # if nb_coups<=3:
             #     score+=0.5
         if self.players[0].is_winner:
-            score = -1
+            score = -20
         
         return score
 

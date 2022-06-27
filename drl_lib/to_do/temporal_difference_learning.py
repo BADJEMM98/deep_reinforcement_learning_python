@@ -24,53 +24,64 @@ def sarsa_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     env = TicTacToeEnv()
 
     epsilon = 0.9
-    total_episodes = 10000
+    num_episodes = 50000
+    max_steps = 100
     alpha = 0.05
     gamma = 0.95
 
-    actions = env.available_actions_ids()
-    Q = defaultdict(lambda: {a: 0.0 for a in actions})
-    pi = defaultdict(lambda: {a: random() for a in actions})
+    Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
+    pi = defaultdict(lambda: {a: random() for a in env.available_actions_ids()})
 
-    def choose_action(state):
-        action = 0
-        if np.random.uniform(0, 1) < epsilon:
+    def choose_action(env):
+        s = env.state_id()
+        if random() < epsilon:
             action = choice(env.available_actions_ids())
         else:
-            action = max(Q[state],key=Q[state].get)
+            action = max(Q[s], key=Q[s].get)
         return action
 
     reward = 0
 
-    for episode in range(1, total_episodes+1):
+    for i_episode in range(1, num_episodes + 1):
+        if i_episode % (num_episodes / 5) == 0:
+            print("\rEpisode {}/{}.".format(i_episode, num_episodes))
         env.reset()
         pred_state = 0
         pred_action = 0
         state1 = env.state_id()
-        action1 = choose_action(state1)
-        while not env.is_game_over():
+        action1 = choose_action(env)
+        Q[state1]
+        t = 0
+        while t < max_steps:
             env.act_with_action_id(env.players[1].sign, action1)
 
             if not env.is_game_over():
                 rand_action = env.players[0].play(env.available_actions_ids())
                 env.act_with_action_id(env.players[0].sign, rand_action)
 
-            state2 = env.state_id()
-            reward = env.score()
-
             if env.is_game_over():
-                state2 = state1
-                state1 = pred_state
-                action1 = pred_action
+                reward = env.score()
+                prediction = Q[pred_state][pred_action]
+                target = reward + gamma * Q[state2][action2]
+                Q[state1][action1] = Q[state1][action1] + alpha * (target - prediction)
+                break
             else:
-                action2 = choose_action(state2)
+                state2 = env.state_id()
+                action2 = choose_action(env)
+                reward = env.score()
 
             # Learning the Q-value
-            Q[state1][action1] = Q[state1][action1] + alpha * (reward + gamma * Q[state2][action2] - Q[state1][action1])
+
+            prediction = Q[state1][action1]
+            target = reward + gamma * Q[state2][action2]
+            Q[state1][action1] = Q[state1][action1] + alpha * (target - prediction)
             pred_state = state1
             state1 = state2
             pred_action = action2
             action1 = action2
+
+            if env.is_game_over():
+                break
 
     return Q
 
@@ -259,7 +270,8 @@ def sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
     """
     env = Env3()
     epsilon = 0.9
-    total_episodes = 10000
+    num_episodes = 50000
+    max_steps = 100
     alpha = 0.05
     gamma = 0.95
 
@@ -269,23 +281,21 @@ def sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
     Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
 
     def choose_action(state, env, Q):
-        action = 0
         if np.random.uniform(0, 1) < epsilon:
             action = choice(env.available_actions_ids())
         else:
             action = max(Q[state], key=Q[state].get)
         return action
 
-    test = []
-    i = 1
-    for episode in range(1, total_episodes + 1):
-
+    for i_episode in range(1, num_episodes + 1):
+        if i_episode % (num_episodes/5) == 0:
+            print("\rEpisode {}/{}.".format(i_episode, num_episodes))
         env.reset()
         state1 = env.state_id()
         action1 = choose_action(state1, env, Q)
         Q[env.state_id()]
         t=0
-        while not env.is_game_over():
+        while t < max_steps:
             env.act_with_action_id(action1)
             state2 = env.state_id()
             reward = env.score()
@@ -295,16 +305,17 @@ def sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
             # Learning the Q-value
             Q[state1][action1] += alpha * (reward + gamma * Q[state2][action2] - Q[state1][action1])
 
-            episode_rewards[episode] += reward
-            episode_lengths[episode] = t
+            episode_rewards[i_episode] += reward
+            episode_lengths[i_episode] = t
 
             state1 = state2
             action1 = action2
-            t+=1
+            t += 1
 
-    for i in range(total_episodes):
-        print(episode_rewards[i], episode_lengths[i])
-    return Q[0], test
+            if env.is_game_over():
+                break
+
+    return Q
 
 def q_learning_on_secret_env3() -> PolicyAndActionValueFunction:
     """
@@ -331,10 +342,10 @@ def expected_sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
 
 
 def demo():
-    # print(sarsa_on_tic_tac_toe_solo())
+    print(sarsa_on_tic_tac_toe_solo())
     # print(q_learning_on_tic_tac_toe_solo())
     # print(expected_sarsa_on_tic_tac_toe_solo())
-    #
-    print(sarsa_on_secret_env3())
+
+    # print(sarsa_on_secret_env3())
     # print(q_learning_on_secret_env3())
     # print(expected_sarsa_on_secret_env3())
