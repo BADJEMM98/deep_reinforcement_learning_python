@@ -74,7 +74,7 @@ def main():
     run=True
     env = TicTacToeEnv()
     #pi_and_q = on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
-    pi_and_q = q_learning_on_tic_tac_toe_solo()
+    pi_and_q = monte_carlo_es_on_tic_tac_toe_solo()
     # off_policy_monte_carlo_control_on_tic_tac_toe_solo()
     #on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
     #  monte_carlo_es_on_tic_tac_toe_solo()
@@ -86,8 +86,11 @@ def main():
                 run = False
         while not env.is_game_over():
             s = env.state_id()
-            # print(s)
+            print(env.convertStateToBoard(s))
+            print("state===",s)
             pis = [pi_and_q.pi[s][a] for a in env.available_actions_ids()]
+            print("available_actions ", env.available_actions_ids())
+            print("pis===",pis)
             if max(pis) == 0.0:
                 a = choice(env.available_actions_ids())
             else:

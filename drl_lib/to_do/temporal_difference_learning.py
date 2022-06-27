@@ -135,7 +135,7 @@ def q_learning_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     """
     # Create an epsilon greedy policy function
     # appropriately for environment action space
-    pi[env.state_id]= epsilon_greedy_policy(actions, Q, epsilon, env.state_id())
+    pi[env.state_id()]= epsilon_greedy_policy(actions, Q, epsilon, env.state_id())
 
     # For every episode
     for ith_episode in range(num_episodes):
@@ -168,10 +168,11 @@ def q_learning_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
             #stats.episode_lengths[ith_episode] = t
             
             # TD Update
-            best_action = max(Q[env.state_id],key=Q[env.state_id].get)
+            best_action = max(Q[env.state_id()],key=Q[env.state_id()].get)
             #pi[env.state_id][best_action] = 1.0
+            pi[env.state_id()]= epsilon_greedy_policy(actions, Q, epsilon, env.state_id())
 
-            td_target = env.score() + discount_factor * Q[env.state_id][best_action]
+            td_target = env.score() + discount_factor * Q[env.state_id()][best_action]
             td_delta = td_target - Q[state][action]
             Q[state][action] += alpha * td_delta
 
@@ -179,7 +180,6 @@ def q_learning_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
             if env.is_game_over:
                 break
                 
-            state = next_state
     pi_and_Q = PolicyAndActionValueFunction(pi, Q)
     return pi_and_Q
 
