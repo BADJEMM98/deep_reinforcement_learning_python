@@ -72,10 +72,11 @@ def find_action(x, y, actions, grid_size):
 def main():
     run=True
     env = TicTacToeEnv()
-    pi_and_q = off_policy_monte_carlo_control_on_tic_tac_toe_solo()
-    # off_policy_monte_carlo_control_on_tic_tac_toe_solo()
-    #on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
-    #  monte_carlo_es_on_tic_tac_toe_solo()
+    # pi_and_q = off_policy_monte_carlo_control_on_tic_tac_toe_solo()
+    # pi_and_q = off_policy_monte_carlo_control_on_tic_tac_toe_solo()
+    pi_and_q = on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
+    print(pi_and_q.pi)
+    # pi_and_q = monte_carlo_es_on_tic_tac_toe_solo()
     cpt = 0
     nb_parties = 100
     while run:
@@ -86,6 +87,8 @@ def main():
             s = env.state_id()
             # print(s)
             pis = [pi_and_q.pi[s][a] for a in env.available_actions_ids()]
+            # print("pi",pi_and_q.pi[s], s, env.available_actions_ids())
+            # print("pis",pis)
             if max(pis) == 0.0:
                 a = choice(env.available_actions_ids())
             else:
@@ -96,22 +99,23 @@ def main():
             draw_window(env.board,env.size)
 
             # faire jouer player[0]
-            if not env.is_game_over():
-                action = None
-                while True:
-                    for event in pygame.event.get():
-                        if event.type == pygame.MOUSEBUTTONDOWN:
-                            col = event.pos[0]//BLOCKWIDTH
-                            row = event.pos[1]//BLOCKHEIGHT
-                            action = find_action(col,row,env.available_actions_ids(),env.size)
-                    if action is not None:
-                        break
-                env.act_with_action_id(env.players[0].sign,action)
-                draw_window(env.board,env.size)
             # if not env.is_game_over():
-            #     rand_action = env.players[0].play(env.available_actions_ids())
-            #     env.act_with_action_id(env.players[0].sign,rand_action)
+            #     action = None
+            #     while True:
+            #         for event in pygame.event.get():
+            #             if event.type == pygame.MOUSEBUTTONDOWN:
+            #                 col = event.pos[0]//BLOCKWIDTH
+            #                 row = event.pos[1]//BLOCKHEIGHT
+            #                 action = find_action(col,row,env.available_actions_ids(),env.size)
+            #         if action is not None:
+            #             break
+            #     env.act_with_action_id(env.players[0].sign,action)
             #     draw_window(env.board,env.size)
+
+            if not env.is_game_over():
+                rand_action = env.players[0].play(env.available_actions_ids())
+                env.act_with_action_id(env.players[0].sign,rand_action)
+                draw_window(env.board,env.size)
 
         env.is_game_over()
 

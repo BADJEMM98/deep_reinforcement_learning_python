@@ -348,7 +348,7 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
     returns_count = defaultdict(float)
 
     Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
-    pi = defaultdict(lambda: {a : 1 for a in env.available_actions_ids()})
+    pi = defaultdict(lambda: {a : random for a in env.available_actions_ids()})
 
     for i_episode in range(1, num_episodes + 1):
         # if i_episode % 1 == 0:

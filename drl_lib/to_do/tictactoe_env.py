@@ -61,13 +61,13 @@ class TicTacToeEnv():
 
     def score(self) -> float:
         score = 0
-        nb_coups = (self.board == 2).sum()
+        #nb_coups = (self.board == 2).sum()
         if self.players[1].is_winner:
             score = 1
-            if nb_coups<=3:
-                score+=1
+            # if nb_coups<=3:
+            #     score+=0.5
         if self.players[0].is_winner:
-            score = -10
+            score = -1
         
         return score
 
