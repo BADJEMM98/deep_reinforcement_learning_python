@@ -181,8 +181,7 @@ def policy_evaluation_on_grid_world() -> ValueFunction:
     theta = 0.0000001
     V = np.random.random((nb_cells,))
     Vs: ValueFunction = {s: V[s] for s in env.states()}
-    # Vs[grid_size - 1] = 0.0
-    # Vs[nb_cells - 1] = 0.0
+
     for state in terminal_states:
         Vs[state] = 0.0
 
@@ -193,8 +192,6 @@ def policy_evaluation_on_grid_world() -> ValueFunction:
         }
     for state in terminal_states:
         pi[state] = {a: 0.0 for a in env.actions()}
-    # pi[grid_size - 1] = {a: 0.0 for a in env.actions()}
-    # pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
 
     Vs = policy_eval(env, pi, Vs, theta=theta)
 
@@ -339,8 +336,7 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
     theta = 0.0000001
     V = np.random.random((len(env.states()),))
     Vs: ValueFunction = {s: V[s] for s in env.states()}
-    # Vs[grid_size - 1] = 0.0
-    # Vs[nb_cells - 1] = 0.0
+
     for state in terminal_states:
         Vs[state] = 0.0
 
@@ -349,8 +345,6 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
         pi[s] = {
             a: v / total for total in (sum(pi[s].values()),) for a, v in pi[s].items()
         }
-    # pi[grid_size - 1] = {a: 0.0 for a in env.actions()}
-    # pi[nb_cells - 1] = {a: 0.0 for a in env.actions()}
     for state in terminal_states:
         pi[state] = {a: 0.0 for a in env.actions()}
 
@@ -360,7 +354,6 @@ def value_iteration_on_secret_env1() -> PolicyAndValueFunction:
     pi, Vs = value_iteration(env, Vs, pi, gamma, theta)
 
     return pi, Vs
-    pass
 
 
 def demo():

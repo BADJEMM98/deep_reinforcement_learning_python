@@ -20,14 +20,13 @@ def monte_carlo_es_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     returns_sum = defaultdict(float)
     returns_count = defaultdict(float)
     actions = env.available_actions_ids()
-    Q = defaultdict(lambda: {a:0.0 for a in actions})
-    pi = defaultdict(lambda: {a:1.0/len(actions) for a in actions})
-    num_episodes = 50000
+    Q = defaultdict(lambda: {a:random() for a in actions})
+    pi = defaultdict(lambda: {a:random() for a in actions})
+    num_episodes = 70000
 
     for i in range(num_episodes):
         env.reset()
         s0 = env.state_id()
-        # pis = [pi[s0][a] for a in env.available_actions_ids()]
         a0 = choice(env.available_actions_ids())
 
         # faire jouer player[1]
@@ -114,14 +113,14 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
         return A[state]
 
     epsilon = 0.3
-    num_episodes = 10000
+    num_episodes = 50000
 
     env = TicTacToeEnv()
 
     returns_sum = defaultdict(float)
     returns_count = defaultdict(float)
 
-    Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
+    Q = defaultdict(lambda: {a: random() for a in env.available_actions_ids()})
     pi = defaultdict(lambda: {a: random() for a in env.available_actions_ids()})
     for i_episode in range(1, num_episodes + 1):
         if i_episode % (num_episodes / 5) == 0:
@@ -389,7 +388,7 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
             final_policy[state] = {a:0.0 for a in Q[state].keys()}
             best_action = max(Q[state],key=Q[state].get)
             final_policy[state][best_action] = 1.0
-            
+
         pi_and_Q = PolicyAndActionValueFunction(final_policy, Q)
 
     return pi_and_Q

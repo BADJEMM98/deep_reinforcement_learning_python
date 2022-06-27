@@ -70,8 +70,6 @@ def sarsa_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
                 action2 = choose_action(env)
                 reward = env.score()
 
-            # Learning the Q-value
-
             prediction = Q[state1][action1]
             target = reward + gamma * Q[state2][action2]
             Q[state1][action1] = Q[state1][action1] + alpha * (target - prediction)
@@ -105,10 +103,10 @@ def q_learning_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     env = TicTacToeEnv()
-    num_episodes = 50000
+    num_episodes = 1000000
     discount_factor = 1.0
-    epsilon = 0.1
-    alpha = 0.6
+    epsilon = 0.15
+    alpha = 0.7
    
     actions = env.available_actions_ids()
     Q = defaultdict(lambda: {a:0.0 for a in actions})
@@ -261,7 +259,6 @@ def q_learning_on_secret_env3() -> PolicyAndActionValueFunction:
                 break
             
     for state in Q.keys():
-        actions = np.array(list(Q[state].keys()))
         final_policy[state] = epsilon_greedy_policy(actions,Q,epsilon,state)
     pi_and_Q = PolicyAndActionValueFunction(final_policy, Q)
     return pi_and_Q
@@ -282,9 +279,9 @@ def expected_sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
 
 def demo():
     print(sarsa_on_tic_tac_toe_solo())
-    # print(q_learning_on_tic_tac_toe_solo())
-    # print(expected_sarsa_on_tic_tac_toe_solo())
+    print(q_learning_on_tic_tac_toe_solo())
+    print(expected_sarsa_on_tic_tac_toe_solo())
 
-    # print(sarsa_on_secret_env3())
-    # print(q_learning_on_secret_env3())
-    # print(expected_sarsa_on_secret_env3())
+    print(sarsa_on_secret_env3())
+    print(q_learning_on_secret_env3())
+    print(expected_sarsa_on_secret_env3())

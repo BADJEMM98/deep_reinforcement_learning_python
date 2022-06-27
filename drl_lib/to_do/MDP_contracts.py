@@ -21,6 +21,3 @@ class MyMDPEnv(MDPEnv):
     def transition_probability(self, s: int, a: int, s_p: int, r: float) -> float:
         ridx = np.where(self.env_data["rewards"] == r)[0][0]
         return self.env_data["transition_matrix"][s,a,s_p,ridx]
-
-    # def view_state(self, s: int):
-    #     print("It's secret !")
