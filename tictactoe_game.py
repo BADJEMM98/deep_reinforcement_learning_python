@@ -1,10 +1,11 @@
+import json
 from random import choice, choices,random
 from tracemalloc import start
 import pygame
 import numpy as np
 from drl_lib.to_do.tictactoe_env import TicTacToeEnv
 from drl_lib.to_do.monte_carlo_methods import monte_carlo_es_on_tic_tac_toe_solo, off_policy_monte_carlo_control_on_tic_tac_toe_solo,on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo
-from drl_lib.to_do.temporal_difference_learning import  q_learning_on_tic_tac_toe_solo
+from drl_lib.to_do.temporal_difference_learning import  q_learning_on_tic_tac_toe_solo, sarsa_on_tic_tac_toe_solo
 
 pygame.init()
 WIDTH, HEIGHT = 470, 470
@@ -58,7 +59,7 @@ def draw_figures(board,size):
 
 def draw_window(board,size):
     WIN.fill(BGCOLOR)
-    clock.tick()
+    clock.tick(3)
     draw_grid()
     draw_figures(board,size)
     pygame.display.flip()
@@ -69,17 +70,25 @@ def find_action(x, y, actions, grid_size):
             return action
     return None
 
+def save_pi(pi,filename):
+    with open(filename, 'w') as fp:
+        json.dump(pi, fp)
+
 
 def main():
     run=True
     env = TicTacToeEnv()
-    pi_and_q = on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
-    # pi_and_q = q_learning_on_tic_tac_toe_solo()
-    #pi_and_q = off_policy_monte_carlo_control_on_tic_tac_toe_solo()
-    #pi_and_q = sarsa_on_tic_tac_toe_solo()
-    # pi_and_q = monte_carlo_es_on_tic_tac_toe_solo()
-
     # pi_and_q = on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo()
+    # save_pi(pi_and_q.pi, "data/pi_and_q_on_policy_first_visit.json")
+    # pi_and_q = q_learning_on_tic_tac_toe_solo()
+    # save_pi(pi_and_q.pi, "data/pi_and_q_q_learning.json")
+    # pi_and_q = off_policy_monte_carlo_control_on_tic_tac_toe_solo()
+    # save_pi(pi_and_q.pi, "data/pi_and_q_off_policy_monte_carlo.json")
+    # pi_and_q = sarsa_on_tic_tac_toe_solo()
+    # save_pi(pi_and_q.pi, "data/pi_and_q_sarsa.json")
+    pi_and_q = monte_carlo_es_on_tic_tac_toe_solo()
+    # save_pi(pi_and_q.pi, "data/pi_and_q_monte_carlo_es.json")
+
     all_keys = pi_and_q.pi.keys()
 
     cpt = 0
@@ -101,7 +110,8 @@ def main():
                     # pi_and_q.q[s] = {a: 0 for a in env.available_actions_ids()}
                
                 pis = [pi_and_q.pi[s][a] for a in env.available_actions_ids()]
-                if max(pis) == 0.0:
+                print(pi_and_q.q[s])
+                if sum(pis) <= 0.0:
                     a = choice(env.available_actions_ids())
                 else:
                     a = choices(env.available_actions_ids(), weights=pis)[0]
@@ -112,24 +122,24 @@ def main():
 
             # faire jouer player[0]
             # HUMAN PLAYER
-            # if not env.is_game_over():
-            #     action = None
-            #     while True:
-            #         for event in pygame.event.get():
-            #             if event.type == pygame.MOUSEBUTTONDOWN:
-            #                 col = event.pos[0]//BLOCKWIDTH
-            #                 row = event.pos[1]//BLOCKHEIGHT
-            #                 action = find_action(col,row,env.available_actions_ids(),env.size)
-            #         if action is not None:
-            #             break
-            #     env.act_with_action_id(env.players[0].sign,action)
-            #     draw_window(env.board,env.size)
-
-            # RANDOM PLAYER
             if not env.is_game_over():
-                rand_action = env.players[0].play(env.available_actions_ids())
-                env.act_with_action_id(env.players[0].sign,rand_action)
+                action = None
+                while True:
+                    for event in pygame.event.get():
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            col = event.pos[0]//BLOCKWIDTH
+                            row = event.pos[1]//BLOCKHEIGHT
+                            action = find_action(col,row,env.available_actions_ids(),env.size)
+                    if action is not None:
+                        break
+                env.act_with_action_id(env.players[0].sign,action)
                 draw_window(env.board,env.size)
+
+            # # RANDOM PLAYER
+            # if not env.is_game_over():
+            #     rand_action = env.players[0].play(env.available_actions_ids())
+            #     env.act_with_action_id(env.players[0].sign,rand_action)
+            #     draw_window(env.board,env.size)
 
         env.is_game_over()
 

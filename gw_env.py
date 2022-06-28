@@ -13,7 +13,7 @@ from drl_lib.to_do.gw_agent import GridWorldAgent
 pygame.init()
 WIDTH, HEIGHT = 700, 700
 WIN = pygame.display.set_mode((HEIGHT, WIDTH))
-pygame.display.set_caption("Line world")
+pygame.display.set_caption("Grid world")
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)

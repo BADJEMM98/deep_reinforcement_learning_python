@@ -1,5 +1,4 @@
 from collections import defaultdict
-from email import policy
 from random import random, choice, choices
 
 import numpy as np
@@ -168,7 +167,7 @@ def on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAnd
             returns_count[(s, a)] += 1.0
             Q[s][a] = returns_sum[(s, a)] / returns_count[(s, a)]
 
-            pi_and_Q = PolicyAndActionValueFunction(pi, Q)
+        pi_and_Q = PolicyAndActionValueFunction(pi, Q)
     return pi_and_Q
 
 def create_target_policy(Q):
@@ -191,12 +190,12 @@ def off_policy_monte_carlo_control_on_tic_tac_toe_solo() -> PolicyAndActionValue
     env = TicTacToeEnv()
 
     actions = env.available_actions_ids()
-    Q = defaultdict(lambda: {a:0.0 for a in actions})
+    Q = defaultdict(lambda: {a:random() for a in actions})
     C = defaultdict(lambda: {a:0.0 for a in actions})
 
-    pi = defaultdict(lambda: {a:1/len(actions) for a in actions})
+    pi = defaultdict(lambda: {a:random() for a in actions})
     target_policy = create_target_policy(Q)
-    num_episodes = 50000
+    num_episodes = 80000
 
     
     for i_episode in range(1, num_episodes+1):
@@ -393,30 +392,92 @@ def on_policy_first_visit_monte_carlo_control_on_secret_env2() -> PolicyAndActio
 
     return pi_and_Q
 
+def create_behaviour_policy(actions):
+    def policy_fn(observation):
+        A = {a:1.0/len(actions) for a in actions}
+        return A
 
+    return policy_fn
 
-def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunction:
-    """
-    Creates a Secret Env2
-    Launches an Off Policy Monte Carlo Control algorithm in order to find the optimal greedy Policy and its action-value function
-    Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))
-    Experiment with different values of hyper parameters and choose the most appropriate combination
-    """
-    env = Env2()
+def off_policy_monte_carlo_control_on_secret_env2() -> PolicyAndActionValueFunction:   
+    """                                                                                
+    Creates a Secret Env2                                                              
+    Launches an Off Policy Monte Carlo Control algorithm in order to find the optimal g
+    Returns the Optimal Policy (Pi(s,a)) and its Action-Value function (Q(s,a))        
+    Experiment with different values of hyper parameters and choose the most appropriat
+    """                                                                                
+    env = Env2()                                                                       
+                                                                                       
+    # TODO                                                                             
+                                                                                       
+    actions = env.available_actions_ids()                                              
+    Q = defaultdict(lambda: {a: random() for a in actions})                            
+    C = defaultdict(lambda: {a: 0.0 for a in actions})   
+    pi = defaultdict(lambda: {a:0.0 for a in actions})                             
+    policy_behaviour = create_behaviour_policy(actions)            
+    target_policy = create_target_policy(Q)                                                                                                                         
+    num_episodes = 10000                                                               
+    for i_episode in range(1, num_episodes + 1):                                       
+                                                                                       
+        env.reset()                                                                    
+        s0 = env.state_id()                                                                                                                                                                             
+        pi[s0] = policy_behaviour(s0)
+        print("pi = " ,pi)
+        pis = [pi[s0][a] for a in env.available_actions_ids()]                                                                                                                                                                     
+        a0 = choices(env.available_actions_ids(),pis)[0]                                   
+        env.act_with_action_id(a0)                                                                                                                             
+        s_history = []                                                                 
+        a_history = []                                                                 
+        s_p_history = []                                                               
+        r_history = []   
 
-    # TODO
-    pass
+        while(not env.is_game_over()):                                                 
+            s = env.state_id()                                                         
+            pi[s] = policy_behaviour(s)
+            pis = [pi[s][a] for a in env.available_actions_ids()]                                                                                           
+            a = choices(env.available_actions_ids(),pis)[0]    
+
+            # faire jouer player[1]                                                    
+            env.act_with_action_id(a)                                                  
+                                                                                       
+            env.is_game_over()
+
+            s_history.append(s)                                                                                                                         
+            a_history.append(a)                                                        
+            s_p_history.append(env.state_id())                                         
+            r_history.append(env.score())                                              
+                                                                                       
+        G = 0.0                                                                        
+        W = 1.0                                                                        
+        discount = 0.999                                                                                                             
+                                                                                       
+        for t in range(len(s_history))[::-1]:                                                                                                     
+                                                                                       
+            state, action, reward = s_history[t], a_history[t], r_history[t]           
+            G = discount * G + reward                                                  
+                                                                                                                                     
+            C[state][action] += W                                                      
+            Q[state][action] += (W / C[state][action]) * (G - Q[state][action])        
+            best_action = max(Q[state], key=Q[state].get)                                                              
+                                                                                       
+            if action != best_action:                                                  
+                break                                                                  
+                                                                                       
+            W = W * (target_policy(state)[action] / policy_behaviour(state)[action])   
+    final_policy = {state: target_policy(state) for state in Q.keys()}                 
+                                                                                       
+    return PolicyAndActionValueFunction(final_policy,Q) 
 
 
 def demo():
     #print("monte_carlo_es_on_tic_tac_toe")
     #print(monte_carlo_es_on_tic_tac_toe_solo())
-    print("on_policy_first_visit_monte_carlo_control_on_tic_tac_toe")
-    print(on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo())
+    # print("on_policy_first_visit_monte_carlo_control_on_tic_tac_toe")
+    # print(on_policy_first_visit_monte_carlo_control_on_tic_tac_toe_solo())
     # print("off_policy_first_visit_monte_carlo_control_on_tic_tac_toe")
     # print(off_policy_monte_carlo_control_on_tic_tac_toe_solo())
 
-    print("secret env")
-    # print(monte_carlo_es_on_secret_env2())
+    # print("secret env")
+    print(monte_carlo_es_on_secret_env2())
     print(on_policy_first_visit_monte_carlo_control_on_secret_env2())
-    #print(off_policy_monte_carlo_control_on_secret_env2())
+    print(off_policy_monte_carlo_control_on_secret_env2())

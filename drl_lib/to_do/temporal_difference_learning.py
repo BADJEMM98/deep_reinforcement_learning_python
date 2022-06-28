@@ -29,8 +29,8 @@ def sarsa_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     alpha = 0.05
     gamma = 0.95
 
-    Q = defaultdict(lambda: {a: 0.0 for a in env.available_actions_ids()})
-    pi = defaultdict(lambda: {a: random() for a in env.available_actions_ids()})
+    Q = defaultdict(lambda: {a: random() for a in env.available_actions_ids()})
+    final_policy = {}
 
     def choose_action(env):
         s = env.state_id()
@@ -43,8 +43,6 @@ def sarsa_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     reward = 0
 
     for i_episode in range(1, num_episodes + 1):
-        if i_episode % (num_episodes / 5) == 0:
-            print("\rEpisode {}/{}.".format(i_episode, num_episodes))
         env.reset()
         pred_state = 0
         pred_action = 0
@@ -80,8 +78,13 @@ def sarsa_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
 
             if env.is_game_over():
                 break
+    for state in Q.keys():
+        actions = np.array(list(Q[state].keys()))
+        final_policy[state] = {a:0.0 for a in actions}
+        best_action = max(Q[state], key=Q[state].get)
+        final_policy[state][best_action]=1.0
 
-    return PolicyAndActionValueFunction(None,Q)
+    return PolicyAndActionValueFunction(final_policy,Q)
 
 
 def epsilon_greedy_policy(actions, Q, epsilon, state):
@@ -103,10 +106,10 @@ def q_learning_on_tic_tac_toe_solo() -> PolicyAndActionValueFunction:
     Experiment with different values of hyper parameters and choose the most appropriate combination
     """
     env = TicTacToeEnv()
-    num_episodes = 1000000
+    num_episodes = 70000
     discount_factor = 1.0
-    epsilon = 0.15
-    alpha = 0.7
+    epsilon = 0.1
+    alpha = 0.6
    
     actions = env.available_actions_ids()
     Q = defaultdict(lambda: {a:0.0 for a in actions})
@@ -279,9 +282,9 @@ def expected_sarsa_on_secret_env3() -> PolicyAndActionValueFunction:
 
 def demo():
     print(sarsa_on_tic_tac_toe_solo())
-    print(q_learning_on_tic_tac_toe_solo())
-    print(expected_sarsa_on_tic_tac_toe_solo())
+    # print(q_learning_on_tic_tac_toe_solo())
+    # print(expected_sarsa_on_tic_tac_toe_solo())
 
-    print(sarsa_on_secret_env3())
-    print(q_learning_on_secret_env3())
-    print(expected_sarsa_on_secret_env3())
+    # print(sarsa_on_secret_env3()[0])
+    # print(q_learning_on_secret_env3())
+    # print(expected_sarsa_on_secret_env3())
