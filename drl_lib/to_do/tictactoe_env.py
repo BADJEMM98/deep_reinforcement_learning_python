@@ -3,7 +3,6 @@ import numpy as np
 
 from ..to_do.Player import Player
 
-
 class TicTacToeEnv():
     def __init__(self,size=3) -> None:
         self.size=size

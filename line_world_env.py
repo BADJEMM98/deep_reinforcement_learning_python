@@ -39,8 +39,7 @@ def line_world(env,Vs,x_agent=None,y_agent=None):
             pygame.draw.rect(WIN,BLACK,rect,1)
     if x_agent is not None and y_agent is not None:
         pygame.draw.circle(WIN,BLACK,(x_agent,y_agent),10,0)
-            
-    
+
 
 def draw_window(env,Vs,x_agent,y_agent):
     line_world(env,Vs,x_agent,y_agent)
